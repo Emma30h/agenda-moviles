@@ -16,6 +16,20 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 - [ ] **Trámite de baja.** Dos móviles figuran con "TRAMITE DE BAJA" en lugar de división. ¿Cuentan en la flota?
 - [ ] **Dos flotas.** ¿Ojos en Alerta y Policiales se manejan como una sola flota o por separado?
 
+## Móviles sin agendar y frecuencia
+
+- [ ] ¿Cómo se detecta hoy que un móvil salió sin estar agendado? ¿Quién lo detecta y a quién avisa?
+- [ ] ¿Hasta qué hora, respecto del inicio del turno, tiene que estar cargada la agenda?
+- [ ] ¿Qué datos mínimos hacen falta para considerar agendado un móvil?
+- [ ] Validar: el Administrador General supervisa y le reclama al cargador de cada dirección. ¿Quién cumple hoy esa función?
+- [ ] Validar: Monitoreo verifica el móvil escuchado en frecuencia y, si no está agendado, deja una alerta. ¿Le sirve así?
+
+## Roles y acceso
+
+- [ ] Validar roles: Administrador General, cargador Norte, cargador Sur y Monitoreo. ¿Falta alguno?
+- [ ] ¿Cuántas personas cargan por dirección y por turno? ¿Desde qué equipos?
+- [ ] ¿Los jefes de división o departamento deberían ver o cargar la agenda?
+
 ## Estructura orgánica
 
 - [ ] Además de Norte, Sur y Monitoreo, ¿qué otras direcciones tiene la Dirección General? ¿Logística, Socioeducativo, EPAT 360 y la Subdirección General tienen estatus de dirección?

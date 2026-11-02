@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Guía de entrevista · Agenda de Móviles</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+@page{size:A4;margin:0}
+:root{--bg:#0a1219;--panel:#101c26;--panel2:#152330;--line:#22343f;--fg:#e8eef2;--muted:#93a6b4;--faint:#5f7484;--brand:#42ade8;--signal:#e2a23b}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{margin:0;background:var(--bg);color:var(--fg)}
+body{font:10.2pt/1.42 Barlow,"Segoe UI",sans-serif}
+.page{width:210mm;height:297mm;padding:11mm 15mm 14mm;position:relative;page-break-after:always;overflow:hidden}
+.page:last-child{page-break-after:auto}
+.wm{position:absolute;top:48%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font:700 120pt Georgia,serif;color:#fff;opacity:.025;white-space:nowrap;pointer-events:none}
+.pie{position:absolute;bottom:7mm;left:15mm;right:15mm;display:flex;justify-content:space-between;font:500 7.5pt "JetBrains Mono",monospace;color:var(--faint);letter-spacing:.04em}
+header{text-align:center;margin-bottom:3mm}
+header img{width:22mm}
+.rot{font:500 7.6pt "JetBrains Mono",monospace;color:var(--brand);letter-spacing:.14em;text-transform:uppercase;margin-top:2mm}
+h1{font:400 20pt/1.12 Georgia,serif;margin:2mm 0 1mm}
+.sub{color:var(--muted);font-size:10pt}
+.datos{display:grid;grid-template-columns:1.3fr 1fr .7fr;gap:3mm;margin:3mm 0}
+.datos div{background:var(--panel);border:1px solid var(--line);border-radius:2mm;padding:1.8mm 3mm 5mm;font:500 7.4pt "JetBrains Mono",monospace;color:var(--faint);text-transform:uppercase;letter-spacing:.06em}
+.obj{background:var(--panel);border-left:3px solid var(--brand);border-radius:2mm;padding:3mm 4mm;margin-bottom:4mm}
+.obj b{color:var(--brand)}
+.uso{display:grid;grid-template-columns:repeat(3,1fr);gap:3mm;margin-bottom:2mm}
+.uso div{background:var(--panel);border:1px solid var(--line);border-radius:2mm;padding:2.5mm 3mm;font-size:9pt;color:var(--muted)}
+.uso b{display:block;color:var(--fg);font-size:9.6pt;margin-bottom:.6mm}
+section{margin-top:3.5mm}
+.sec{display:flex;align-items:baseline;gap:3mm;border-bottom:1px solid var(--brand);padding-bottom:1.2mm;margin-bottom:2mm}
+.sec .n{font:500 8pt "JetBrains Mono",monospace;color:var(--brand)}
+.sec h2{font:700 14pt/1 "Barlow Condensed",sans-serif;margin:0;letter-spacing:.01em;text-transform:uppercase}
+.sec .pri{margin-left:auto;font:500 7pt "JetBrains Mono",monospace;color:var(--signal);border:1px solid var(--signal);border-radius:1mm;padding:.4mm 1.6mm;letter-spacing:.08em}
+.ctx{font-size:8.8pt;color:var(--muted);margin:0 0 1.8mm;font-style:italic}
+ol{margin:0;padding:0;list-style:none;counter-reset:q}
+ol li{position:relative;padding:1.1mm 0 1.1mm 9mm;border-bottom:1px solid var(--line);break-inside:avoid}
+ol li:last-child{border-bottom:0}
+ol li::before{counter-increment:q;content:"";position:absolute;left:1mm;top:2.1mm;width:3.2mm;height:3.2mm;border:1.2px solid var(--muted);border-radius:.6mm}
+ol li .val{font:500 6.8pt "JetBrains Mono",monospace;color:var(--brand);border:1px solid var(--brand);border-radius:1mm;padding:0 1.2mm;margin-right:1.5mm;vertical-align:1px}
+table{width:100%;border-collapse:collapse;font-size:8.8pt}
+th{font:500 7.2pt "JetBrains Mono",monospace;color:var(--brand);text-transform:uppercase;letter-spacing:.06em;text-align:left;border-bottom:1px solid var(--brand);padding:1.6mm 2mm}
+td{padding:1.8mm 2mm;vertical-align:top}
+tr:nth-child(even) td{background:var(--panel)}
+tr:nth-child(odd) td{background:var(--panel2)}
+td.ok{width:22mm;color:var(--faint);font:500 7pt "JetBrains Mono",monospace}
+.notas{margin-top:4mm}
+.linea{height:8.5mm;border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+
+<!-- ============ PÁGINA 1 ============ -->
+<div class="page">
+ <div class="wm">D.M.C.A</div>
+ <header>
+  <img src="logo_ojo_oscuro.png" alt="">
+  <div class="rot">Dirección General de Policía Territorial y Proximidad</div>
+  <h1>Guía de entrevista<br>Agenda de Móviles</h1>
+  <div class="sub">Relevamiento de cómo funciona la agenda de móviles en la calle</div>
+ </header>
+
+ <div class="datos"><div>Entrevistado</div><div>Cargo / destino</div><div>Fecha</div></div>
+
+ <div class="obj"><b>Objetivo del sistema.</b> Que los administradores vean en tiempo real qué móviles y qué personal están disponibles, dónde presta servicio cada uno (Norte o Sur) y <b>qué móviles faltan agendarse</b>. Hoy salen móviles por frecuencia que no figuran en la agenda, y cada dirección maneja números distintos.</div>
+
+ <div class="uso">
+  <div><b>Pedir ejemplos reales</b>"¿Me contás la última vez que pasó?"</div>
+  <div><b>Anotar sus palabras</b>Los nombres que usan, aunque no coincidan con los nuestros.</div>
+  <div><b>Poco tiempo</b>Priorizar los bloques marcados como PRIORIDAD.</div>
+ </div>
+ <div class="ctx" style="margin-top:2mm">Las preguntas con <span style="font-style:normal;font:500 6.8pt 'JetBrains Mono',monospace;color:var(--brand);border:1px solid var(--brand);border-radius:1mm;padding:0 1.2mm">VALIDAR</span> son supuestos que ya están en el prototipo: hay que confirmarlos o corregirlos.</div>
+
+ <section>
+  <div class="sec"><span class="n">01</span><h2>Su rol y cómo se trabaja hoy</h2><span class="pri">PRIORIDAD</span></div>
+  <ol>
+   <li>¿Qué función cumple, en qué dirección y desde cuándo? ¿Carga la agenda, decide préstamos o usa los móviles?</li>
+   <li>¿Cómo se arma hoy la agenda de móviles? ¿En qué herramienta (planilla, papel, WhatsApp, otra)?</li>
+   <li>¿Quién la carga, a qué hora y cada cuánto se actualiza durante el turno?</li>
+   <li>¿Cómo se llama al listado de móviles del día (parte, recuento, agenda, otro)?</li>
+   <li>¿Cómo se informa la agenda a Monitoreo y a la Dirección General?</li>
+   <li>¿Por qué cree que los números no coinciden entre las direcciones y con la frecuencia? Pedir un caso concreto.</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">02</span><h2>Móviles sin agendar y frecuencia</h2><span class="pri">PRIORIDAD</span></div>
+  <ol>
+   <li>¿Cómo se detecta hoy que un móvil salió a la calle sin estar agendado? ¿Quién lo detecta?</li>
+   <li>Cuando pasa, ¿qué se hace, a quién se avisa y por qué medio?</li>
+   <li>¿Hasta qué hora, respecto del inicio del turno, tiene que estar cargada la agenda?</li>
+   <li>¿Qué datos mínimos hacen falta para considerar que un móvil está agendado (móvil, chofer, jefe de coche, zona)?</li>
+   <li><span class="val">VALIDAR</span>El Administrador General supervisa lo que falta y le reclama al cargador de cada dirección. ¿Es así? ¿Quién cumple hoy esa función?</li>
+   <li><span class="val">VALIDAR</span>Monitoreo verifica en el sistema el móvil que escucha en frecuencia y, si no está agendado, deja una alerta para su dirección. ¿Le sirve así?</li>
+  </ol>
+ </section>
+ <div class="pie"><span>D.M.C.A · AGENDA DE MÓVILES</span><span>1</span></div>
+</div>
+
+<!-- ============ PÁGINA 2 ============ -->
+<div class="page">
+ <div class="wm">D.M.C.A</div>
+
+ <section style="margin-top:0">
+  <div class="sec"><span class="n">03</span><h2>Estados del móvil y fuera de servicio</h2><span class="pri">PRIORIDAD</span></div>
+  <ol>
+   <li>¿Qué estados puede tener un móvil? Que los liste con sus palabras.</li>
+   <li><span class="val">VALIDAR</span>Usamos: disponible, en servicio, retenido por tarea y fuera de servicio. ¿Falta alguno?</li>
+   <li>Motivos de fuera de servicio: ¿cuáles son graves (choque, falla mecánica) y cuáles se resuelven rápido (batería, cubierta, combustible)?</li>
+   <li>¿Quién marca un móvil fuera de servicio y quién lo vuelve a habilitar? ¿Se anota dónde está (taller, base)?</li>
+   <li>¿Hay móviles que se usan y no figuran en ninguna de las planillas de flota?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">04</span><h2>Dotación</h2><span class="pri">PRIORIDAD</span></div>
+  <ol>
+   <li><span class="val">VALIDAR</span>Cupo por móvil: 1 chofer, 1 jefe de coche y hasta 2 acompañantes. ¿Es correcto? ¿Cambia según sea sedán, pick-up o camioneta?</li>
+   <li>Normalmente son 2, pero se vieron móviles con 1 sola persona. ¿Está permitido? ¿En qué casos?</li>
+   <li>¿Siempre hace falta chofer y jefe de coche, o con un chofer alcanza?</li>
+   <li><span class="val">VALIDAR</span>La dotación se arma en cada turno y una persona puede cambiar de móvil a mitad de turno. ¿Es así?</li>
+   <li>¿Cómo se cubre una baja de último momento (licencia, falta, TNO)?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">05</span><h2>Turnos y guardias</h2></div>
+  <ol>
+   <li><span class="val">VALIDAR</span>Todos manejan los mismos rangos (07 a 14, 14 a 07, 07 a 23), con excepciones. ¿Qué divisiones tienen horarios distintos?</li>
+   <li>En la nómina aparecen guardias 4º, 5º y 6º además de 1º, 2º y 3º. ¿Qué diferencia tienen?</li>
+   <li>En el cambio de turno, ¿cómo se hace el relevo de móviles y de personal?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">06</span><h2>Móvil retenido por procedimiento</h2><span class="pri">PRIORIDAD</span></div>
+  <div class="ctx">Ejemplo: hecho a las 6:30 en el turno de 14 a 07 con un aprehendido; el móvil sigue ocupado pasadas las 07.</div>
+  <ol>
+   <li>¿Cuánto suele demorar una entrega de procedimiento? ¿Hay un tope o un caso extremo?</li>
+   <li>¿Quién avisa que el móvil quedó retenido y a quién? ¿Quién avisa cuando se libera?</li>
+   <li>¿Qué otras tareas hacen que un móvil falte (traslado de detenido, comisión, custodia)?</li>
+   <li>¿Qué hace el turno entrante mientras ese móvil no está? ¿El personal retenido sigue en horas extras?</li>
+   <li>¿Qué datos se anotan: motivo, destino (comisaría, fiscalía, unidad judicial), hora de inicio?</li>
+  </ol>
+ </section>
+ <div class="pie"><span>D.M.C.A · AGENDA DE MÓVILES</span><span>2</span></div>
+</div>
+
+<!-- ============ PÁGINA 3 ============ -->
+<div class="page">
+ <div class="wm">D.M.C.A</div>
+
+ <section style="margin-top:0">
+  <div class="sec"><span class="n">07</span><h2>Préstamo de móviles entre Norte y Sur</h2><span class="pri">PRIORIDAD</span></div>
+  <ol>
+   <li>¿Con qué frecuencia pasa y en qué situaciones (falta en una zona, sobra en otra, eventos)?</li>
+   <li><span class="val">VALIDAR</span>Lo decide y lo autoriza el Administrador General. ¿Es así o cada dirección puede prestar?</li>
+   <li>¿Se presta por un turno, un día o varios días? ¿Quién avisa cuando vuelve?</li>
+   <li>¿Va con su dotación o solo el vehículo?</li>
+   <li><span class="val">VALIDAR</span>Mientras está prestado, cuenta para la dirección que lo usa. ¿Es así?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">08</span><h2>Préstamo de personal</h2></div>
+  <ol>
+   <li><span class="val">VALIDAR</span>Un efectivo de Norte puede prestarse a Sur por una guardia. ¿Quién lo decide y quién lo autoriza?</li>
+   <li>¿Es siempre por una guardia o puede ser por varios días?</li>
+   <li>Al terminar, ¿vuelve solo a su dirección o alguien marca la devolución?</li>
+   <li>¿Se presta también entre divisiones de la misma dirección? ¿Se registra?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">09</span><h2>Móviles por división</h2></div>
+  <ol>
+   <li>Cada móvil figura asignado a una división. ¿Cada división usa solo los suyos, o el departamento los reparte según el día?</li>
+   <li>Si una división le pasa un móvil a otra de la misma dirección, ¿es préstamo (vuelve) o reasignación (queda)?</li>
+   <li>¿Ojos en Alerta y Policiales se manejan como una sola flota o por separado?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">10</span><h2>Roles y acceso al sistema</h2></div>
+  <ol>
+   <li><span class="val">VALIDAR</span>Roles previstos: Administrador General, cargador Norte, cargador Sur y Monitoreo (consulta y frecuencia). ¿Falta alguno?</li>
+   <li>¿Cuántas personas cargan por dirección y por turno? ¿Desde qué equipos (PC, celular)?</li>
+   <li>¿Los jefes de división o de departamento deberían ver la agenda? ¿Y cargar?</li>
+  </ol>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">11</span><h2>Personal y aptitud</h2></div>
+  <ol>
+   <li><span class="val">VALIDAR</span>Apto para móvil: de calle, en servicio efectivo, sin TNO, licencia ni suspensión vigente. ¿Algo más?</li>
+   <li>¿Quién mantiene actualizadas las licencias, TNO y suspensiones? ¿Con qué frecuencia?</li>
+   <li>¿Cuál es la nómina oficial de cada dirección? Hoy DPCS repite las 503 personas de Norte.</li>
+  </ol>
+ </section>
+ <div class="pie"><span>D.M.C.A · AGENDA DE MÓVILES</span><span>3</span></div>
+</div>
+
+<!-- ============ PÁGINA 4 ============ -->
+<div class="page">
+ <div class="wm">D.M.C.A</div>
+
+ <section style="margin-top:0">
+  <div class="sec"><span class="n">12</span><h2>Datos de las planillas a confirmar</h2></div>
+  <div class="ctx">Para quien conozca la flota y las nóminas.</div>
+  <table>
+   <tr><th>Dato</th><th>Duda</th><th>Respuesta</th></tr>
+   <tr><td>Matrícula interna 1</td><td>Figura en dos dominios: AF859VY (Norte, Div. 15) y AG999CN (Sur, Div. 12). ¿Cuál es el correcto?</td><td class="ok"></td></tr>
+   <tr><td>AC591MK y HOQ631</td><td>Figuran en "trámite de baja" en lugar de división. ¿Siguen contando en la flota?</td><td class="ok"></td></tr>
+   <tr><td>45 móviles Ojos en Alerta</td><td>Sin dirección: 29 en Logística y 16 en EPAT 360. ¿A quién pertenecen y quién los usa?</td><td class="ok"></td></tr>
+   <tr><td>Flota Policiales</td><td>7 móviles sin dirección y 27 sin división asignada.</td><td class="ok"></td></tr>
+   <tr><td>137 (Norte) y 429 (Sur)</td><td>Personas sin situación de revista, TNO ni personal de calle cargados. ¿Siguen en la dirección?</td><td class="ok"></td></tr>
+   <tr><td>Jefe de guardia en Sur</td><td>Figura en TNO y como personal de calle a la vez. ¿Error de carga?</td><td class="ok"></td></tr>
+   <tr><td>Retención de armamento</td><td>Dice "NO" en todos los TNO y solo 3 personas tienen "SI". ¿Se usa?</td><td class="ok"></td></tr>
+   <tr><td>Otras direcciones</td><td>Logística, Socioeducativo, EPAT 360 y Subdirección General: ¿tienen estatus de dirección?</td><td class="ok"></td></tr>
+  </table>
+ </section>
+
+ <section>
+  <div class="sec"><span class="n">13</span><h2>Cierre</h2></div>
+  <ol>
+   <li>¿Qué es lo que más le complica hoy al armar o consultar la agenda?</li>
+   <li>Si el sistema resolviera una sola cosa, ¿cuál sería?</li>
+   <li>¿Qué situación rara o excepción no le preguntamos?</li>
+   <li>¿A quién más deberíamos entrevistar?</li>
+   <li>¿Puede pasar una agenda real de un día normal y una de un día complicado?</li>
+  </ol>
+ </section>
+
+ <section class="notas">
+  <div class="sec"><span class="n">—</span><h2>Notas</h2></div>
+  <div class="linea"></div><div class="linea"></div><div class="linea"></div><div class="linea"></div><div class="linea"></div>
+  <div class="linea"></div><div class="linea"></div><div class="linea"></div><div class="linea"></div>
+ </section>
+ <div class="pie"><span>D.M.C.A · AGENDA DE MÓVILES</span><span>4</span></div>
+</div>
+
+</body>
+</html>
