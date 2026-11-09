@@ -24,6 +24,46 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 - [ ] Validar: el Administrador General supervisa y le reclama al cargador de cada dirección. ¿Quién cumple hoy esa función?
 - [ ] Validar: Monitoreo verifica el móvil escuchado en frecuencia y, si no está agendado, deja una alerta. ¿Le sirve así?
 
+## Designación radial
+
+- [ ] ¿Quién asigna la designación radial (por ejemplo URCA10)? ¿Hay un listado fijo o se define en cada turno?
+- [ ] ¿La designación corresponde a una zona, un cuadrante o una función? ¿Qué significan el nombre y el número?
+- [ ] Cuando un móvil cambia por frecuencia de URCA10 a CENTENO20, ¿quién lo informa y quién lo registra?
+- [ ] ¿Dos móviles pueden usar la misma designación a la vez? En el prototipo no se permite.
+- [ ] ¿Un móvil puede salir sin designación asignada? En el prototipo es obligatoria, junto con el móvil y el chofer.
+- [ ] DJP y UT son lo mismo. ¿Cada División Territorial corresponde a un DJP/UT con el mismo número? Las frecuencias nombran los distritos 17 y 21, y el KML llega hasta el 27, pero en las planillas no hay Divisiones 17 ni 21: ¿a quién pertenecen?
+- [ ] ¿La designación radial depende del DJP/UT donde trabaja el móvil?
+
+**Surgidas del SAE** (detalle en `Designaciones radiales SAE.md`):
+
+- [ ] ¿Existe un listado oficial de designaciones? En el SAE aparecen unas 160 (URCA, YOFRE, QUEBRADA…), con varias formas de escribirlas.
+- [ ] ¿Qué indica el número? Este usa 20, 21 y 22; las demás zonas usan 10, 11, 12 y 13.
+- [ ] ¿Qué diferencia hay entre 10, 11, 12 y 13 dentro de una misma zona?
+- [ ] ¿Hay números que nunca deberían usarse, o un rango permitido? En el prototipo el número es libre.
+- [ ] ¿Quién autoriza una designación nueva? En el prototipo el cargador la usa como excepción y solo el Administrador General la suma a la lista.
+- [ ] ¿El cargador puede usar una designación de otra Dirección como excepción, o debería bloquearse? Hoy se permite y queda registrada.
+- [ ] ¿Los números 01 y 02 son jefes de división o de sector? ¿Quiénes usan 03 a 07 (por ejemplo CABRERA07, YOFRE03, QUEBRADA04)?
+- [ ] ¿AQUILES, EROS y ARES son los supervisores de Este, Sur y Norte? ¿Qué designación tienen Centro y Oeste?
+- [ ] ¿Qué son MILOS, TANGO, AGUILA, IGUANA, ANDU y HALCON?
+- [ ] ¿Supervisores y jefes se agendan en esta app como un móvil más?
+- [ ] ¿Por qué un móvil usa varias designaciones? ¿Cambia por turno, por necesidad o por el personal que lleva?
+- [ ] ¿Un móvil trabaja en la división que figura en la flota? En el SAE, entre septiembre de 2025 y abril de 2026, solo el 7% de los registros coincide con el distrito de su designación.
+- [ ] ¿El número de `Ojos Alerta` que mostraba el SAE es la matrícula interna del móvil?
+- [ ] ¿Por qué desde abril de 2026 el campo Recurso del SAE dejó de mostrar el interno? ¿Se puede saber qué móvil es por el número de equipo (IMEI)?
+- [ ] ¿Los móviles policiales usan las mismas designaciones que los de Ojos en Alerta?
+
+## Alta, baja y pases
+
+- [ ] ¿Quién da de alta y de baja personal? En el prototipo lo hacen el cargador de cada Dirección y el General.
+- [ ] Una exoneración o cesantía, ¿debería cargarla solo el General o alguien de Personal?
+- [ ] ¿Qué motivos de baja de personal se usan? En el prototipo: pase a otra dependencia, exoneración, cesantía, retiro, renuncia, fallecimiento y otro.
+- [ ] ¿Quién da de alta y de baja un móvil? ¿Qué motivos se usan?
+- [ ] Un pase, ¿se carga cuando se resuelve o desde la fecha en que rige? En el prototipo vale desde que se carga.
+- [ ] ¿Quién carga las licencias, TNO y suspensiones, y de dónde sale ese dato?
+- [ ] ¿Qué tipos de licencia usan y cuáles impiden salir en móvil? En el prototipo todas lo impiden.
+- [ ] ¿Quién puede ver una situación como TNO? En el prototipo la ve quien puede ver a esa persona; la observación, solo quien puede editarla.
+- [ ] ¿La nómina va a actualizarse a mano o desde una fuente oficial?
+
 ## Roles y acceso
 
 - [ ] Validar roles: Administrador General, cargador Norte, cargador Sur y Monitoreo. ¿Falta alguno?
@@ -52,6 +92,7 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 
 ## Préstamo de personal (Norte ↔ Sur)
 
+- [ ] Por pases o excepciones, en el prototipo un cargador puede agendar personal de otra Dirección sin préstamo del General: solo muestra un aviso y queda en el Historial. ¿Es correcto o alguien debería autorizarlo?
 - [ ] Un efectivo de Norte puede ser prestado a Sur por una guardia. ¿Quién lo decide y quién lo autoriza?
 - [ ] ¿El préstamo es siempre por una guardia, o puede ser por varios días?
 - [ ] Al terminar la guardia, ¿vuelve solo a su dirección o alguien tiene que marcar la devolución?
@@ -61,8 +102,11 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 ## Asignación de móviles a divisiones
 
 - [ ] Cada móvil figura asignado a una división en las planillas de flota. ¿En la práctica cada división usa solo sus móviles, o el departamento los reparte según la necesidad del día?
-- [ ] Si una división le pasa un móvil a otra de la misma dirección, ¿es un préstamo (vuelve) o una reasignación (queda)? ¿Quién lo decide?
+- [ ] Una división o UT puede prestarle un móvil a otra según necesidad (por ejemplo la 15 a la 24 BIS, 14 o 23). En el prototipo lo hace el cargador dentro de su dirección y hacia otra dirección solo el General. ¿Es así? ¿Es préstamo (vuelve) o reasignación (queda)?
 - [ ] ¿Cada cuánto cambia la asignación de móviles a divisiones?
+- [ ] Cuando un móvil se presta a otra división o UT, ¿qué pasa con su dotación? ¿Va con su gente o la pone la división que lo recibe?
+- [ ] Si un móvil ya está en servicio con su dotación y lo mandan a otra división en plena guardia, ¿cómo se resuelve? ¿Sigue la misma gente y horario? ¿Cambia la designación radial? ¿Quién lo registra? (Hoy el prototipo obliga a terminar el servicio y volver a cargarlo; la idea es una opción "Pasar a otra división".)
+- [ ] En el relevo, si el mismo móvil sigue en la calle pero entra otra dotación, ¿cómo se hace y se registra?
 
 ## Dotación
 
