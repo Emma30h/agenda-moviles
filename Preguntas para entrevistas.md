@@ -73,6 +73,16 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 
 ## Roles y acceso
 
+**Próximo tema (planteado el 09/11/2026): reparto de roles y login.** Roles previstos: cargadores de Norte y Sur, Supervisores y Jefes de calle que ven los móviles agendados en su jurisdicción.
+
+- [ ] ¿Qué es la jurisdicción de un Supervisor y la de un Jefe de calle: Dirección, departamento, división (UT) o zona de frecuencia?
+- [ ] Supervisores y Jefes de calle, ¿solo consultan o pueden cargar algo, como novedades o un móvil escuchado en frecuencia?
+- [ ] ¿Ven también el personal de cada móvil, o solo los móviles?
+- [ ] ¿Un usuario puede tener más de un rol o jurisdicción, por ejemplo un reemplazo?
+- [ ] ¿Cómo se ingresa: usuario y contraseña propios, cuenta institucional o DNI? ¿Quién da de alta los usuarios y quién los da de baja?
+- [ ] ¿Se usa desde el celular en la calle o solo desde computadoras de la oficina?
+- [ ] ¿Hace falta saber quién cargó cada dato? El historial ya lo registra por rol; con login sería por persona.
+
 - [ ] Validar roles: Administrador General, cargador Norte, cargador Sur y Monitoreo. ¿Falta alguno?
 - [ ] ¿Cuántas personas cargan por dirección y por turno? ¿Desde qué equipos?
 - [ ] ¿Los jefes de división o departamento deberían ver o cargar la agenda?
