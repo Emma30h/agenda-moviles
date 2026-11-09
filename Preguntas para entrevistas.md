@@ -64,6 +64,13 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 - [ ] ¿Quién puede ver una situación como TNO? En el prototipo la ve quien puede ver a esa persona; la observación, solo quien puede editarla.
 - [ ] ¿La nómina va a actualizarse a mano o desde una fuente oficial?
 
+## Móviles reservados
+
+- [ ] ¿Cómo se llama en la práctica a un móvil que no sale en la guardia sin tener novedad? En el prototipo, "Reservado".
+- [ ] ¿Qué motivos se usan? En el prototipo: sin novedad, falta de personal, rotación del vehículo, a disposición de la superioridad y otro.
+- [ ] ¿Quién puede reservar un móvil: el cargador o solo el General?
+- [ ] ¿La reserva vale solo para esa guardia o puede durar varios días?
+
 ## Roles y acceso
 
 - [ ] Validar roles: Administrador General, cargador Norte, cargador Sur y Monitoreo. ¿Falta alguno?

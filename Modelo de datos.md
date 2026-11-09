@@ -72,6 +72,9 @@ erDiagram
 
 ## Decisiones tomadas
 
+- Estado **Reservado**: un móvil disponible que no sale en esa guardia sin tener novedad. Guarda motivo, observación, usuario y guardia (fecha y turno), no cuenta como sin agendar y vuelve solo a disponible en la guardia siguiente.
+- Los reclamos del General se cierran solos cuando lo pedido se cumple (el móvil se agendó o se reservó, o la Dirección ya no tiene móviles sin agendar), o a mano. Los resueltos quedan en el historial y a la vista 24 Hs.
+
 - Toda edición de un móvil o una persona se puede deshacer desde el historial, de la más nueva a la más vieja. No se deshace si los datos cambiaron por otro lado, si el interno o la patente ahora son de otro móvil, o si el móvil está en servicio o prestado y el cambio era de división. Un alta equivocada se da de baja con el motivo "Cargado por error".
 
 - La aptitud se calcula para la fecha del servicio: una licencia futura impide agendar a esa persona para esos días, pero no hoy.

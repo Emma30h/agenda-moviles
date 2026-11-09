@@ -28,6 +28,7 @@ y abrir http://localhost:3000.
 ## Qué incluye el prototipo
 
 - **Control en vivo:** móviles sin agendar por dirección, personal apto libre, dotaciones incompletas, verificación de móviles escuchados en frecuencia y reclamos del General a los cargadores.
+- **Reservado:** un móvil que no sale en la guardia sin tener novedad deja de contar como sin agendar solo esa guardia.
 - **Recuento:** propios, prestados y recibidos por dirección y departamento, y qué móviles faltan y por qué.
 - **Tipo de móvil:** Ojos en Alerta o Policial, con su logo en la lista y la ficha, filtro en Móviles y conteo en Recuento.
 - **Móviles:** pantalla principal del cargador. Lista los móviles de su dirección con su estado; al tocar uno se abre su agenda para asignar designación radial, horario y personal, marcarlo ocupado o fuera de servicio y terminar el servicio.

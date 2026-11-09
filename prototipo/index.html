@@ -6,11 +6,11 @@
 <title>Agenda de Móviles</title>
 <style>
 :root{--bg:#f4f5f7;--panel:#fff;--ink:#1b1f24;--muted:#5d6672;--line:#dde1e6;--accent:#1f4f8f;--accent-ink:#fff;
---ok:#1d7a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf1d8;--bad:#a8261b;--bad-bg:#fbe5e2;--info:#1f4f8f;--info-bg:#e4ecf7;--pur:#5b3aa0;--pur-bg:#ece6f7}
+--ok:#1d7a46;--ok-bg:#e3f4ea;--warn:#8a5a00;--warn-bg:#fdf1d8;--bad:#a8261b;--bad-bg:#fbe5e2;--info:#1f4f8f;--info-bg:#e4ecf7;--pur:#5b3aa0;--pur-bg:#ece6f7;--res:#1f6670;--res-bg:#dcf0f2}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111418;--panel:#1a1f25;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c333b;--accent:#6ea0e6;--accent-ink:#0d1117;
---ok:#6fd39b;--ok-bg:#163324;--warn:#f0c060;--warn-bg:#3a2d10;--bad:#f08a80;--bad-bg:#3d1b18;--info:#8fb6ee;--info-bg:#18273b;--pur:#b9a2ee;--pur-bg:#2a2140}}
+--ok:#6fd39b;--ok-bg:#163324;--warn:#f0c060;--warn-bg:#3a2d10;--bad:#f08a80;--bad-bg:#3d1b18;--info:#8fb6ee;--info-bg:#18273b;--pur:#b9a2ee;--pur-bg:#2a2140;--res:#7fd0d8;--res-bg:#123236}}
 :root[data-theme="dark"]{--bg:#111418;--panel:#1a1f25;--ink:#e6e9ed;--muted:#9aa4b0;--line:#2c333b;--accent:#6ea0e6;--accent-ink:#0d1117;
---ok:#6fd39b;--ok-bg:#163324;--warn:#f0c060;--warn-bg:#3a2d10;--bad:#f08a80;--bad-bg:#3d1b18;--info:#8fb6ee;--info-bg:#18273b;--pur:#b9a2ee;--pur-bg:#2a2140}
+--ok:#6fd39b;--ok-bg:#163324;--warn:#f0c060;--warn-bg:#3a2d10;--bad:#f08a80;--bad-bg:#3d1b18;--info:#8fb6ee;--info-bg:#18273b;--pur:#b9a2ee;--pur-bg:#2a2140;--res:#7fd0d8;--res-bg:#123236}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 header{background:var(--panel);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
@@ -86,6 +86,15 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .movcel{display:flex;align-items:center;gap:8px}
 .chipt{display:inline-flex;align-items:center;gap:6px;padding:5px 12px}
 .chk{display:flex;align-items:center;gap:8px;margin:6px 0}
+.res{display:flex;gap:12px;align-items:flex-start;margin-top:12px;padding:12px 14px;border-radius:10px;border:1px solid;border-left-width:6px;font-size:14px;line-height:1.5}
+.res.ok{background:var(--ok-bg);border-color:var(--ok)}.res.bad{background:var(--bad-bg);border-color:var(--bad)}.res.warn{background:var(--warn-bg);border-color:var(--warn)}
+.res-ic{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:16px;color:var(--panel)}
+.res.ok .res-ic{background:var(--ok)}.res.bad .res-ic{background:var(--bad)}.res.warn .res-ic{background:var(--warn)}
+.res-c{flex:1;min-width:0}
+.res-t{font-weight:700;font-size:15px;margin-bottom:2px}.res.ok .res-t{color:var(--ok)}.res.bad .res-t{color:var(--bad)}.res.warn .res-t{color:var(--warn)}
+.res-q{font-weight:600;color:var(--text,inherit);background:var(--panel);border-radius:6px;padding:1px 7px;margin-left:6px;font-size:13px}
+.res-p{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.res-p .small{margin-right:auto}
+.b.rsv{background:var(--res-bg);color:var(--res)}
 .okt{color:var(--ok)}.badt{color:var(--bad)}.warnt{color:var(--warn,#d9a441)}
 .libres{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}
 .libres .small{width:100%}
@@ -93,7 +102,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .chip:hover{border-color:var(--accent)}
 .rad{letter-spacing:.02em}
 tr.cerrado td{opacity:.6}
-.gb{width:270px}
+.gb{width:320px}
 @media (max-width:900px){.ag{grid-template-columns:minmax(0,1fr)}.gb{width:100%}}
 .fchips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
 .fchip{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;cursor:pointer;font:inherit}
@@ -119,7 +128,8 @@ tr.grp td{background:var(--bg);font-size:12px;font-weight:600;color:var(--muted)
 <header>
   <div><h1>Agenda de Móviles</h1><div class="sub">Dirección General de Policía Territorial y Proximidad · Prototipo</div></div>
   <div class="hctl">
-    <input type="text" id="gb" class="gb" placeholder="Buscar DNI, interno, patente o designación" autocomplete="off">
+    <label class="small muted" for="gb">Búsqueda rápida</label>
+    <input type="search" id="gb" class="gb" placeholder="DNI, interno, patente o designación + Enter" title="Búsqueda rápida: escribí un DNI, interno, patente, designación o apellido y apretá Enter para abrir su ficha" autocomplete="off">
     <label class="small muted" for="rol">Usuario</label>
     <select id="rol"></select>
     <button class="btn" data-act="vaciar">Limpiar todo</button>
@@ -259,6 +269,7 @@ function seed(vacio){
  const a=free[0],b=free.find(m=>dirX(m.unidad)!==dirX(a.unidad))||free[1];
  const sa=mk(a,a.unidad,prev,2);sa.ret={motivo:'P1',obs:'Aprehendido: entrega en Unidad Judicial',desde:is(new Date(sa.finPrev).getTime()-40*6e4)};
  mk(b,b.unidad,prev,2);
+ if(!vacio)for(const d of['N','S']){const x=movs.find(m=>libre(m)&&dirX(m.unidad)===d);if(x)x.res={fecha:cur[0],turno:cur[1],motivo:'Falta de personal',obs:'',por:'Datos de ejemplo',ts:is(now-ri(1,4)*H)}}
  return{unidades:U,turnos:TUR0.map(t=>({...t})),motivos:MOT0.map(m=>({...m})),moviles:movs,personal:pers,servicios:vacio?[]:servs,prestamos:vacio?[]:prs,
   audit:[{ts:iso(),u:'Sistema',acc:'Datos de ejemplo',det:vacio?'Datos ficticios limpios: sin agenda, préstamos ni móviles fuera de servicio':'Se generaron datos ficticios para el prototipo',movil:null}],seq:sn};
 }
@@ -282,17 +293,19 @@ const servA=mid=>S.servicios.find(s=>s.movil===mid&&!s.finReal);
 const prestP=(dni,fecha,turno)=>S.prestPers.find(q=>q.dni===dni&&!q.hasta&&(!fecha||(q.fecha===fecha&&q.turno===turno)));
 const turTxt=(f,t)=>{const T=S.turnos.find(z=>z.id===t);return`${T?T.nombre:t} del ${f.slice(8)}/${f.slice(5,7)}`};
 const usa=m=>{const p=prest(m.id);return p?p.destino:m.unidad};
-function est(m){if(!m.activo)return'BAJA';if(m.fs)return'FS';const s=servA(m.id);if(s)return s.ret?'RET':'SERV';return'DISP'}
+const resVig=m=>m.res&&m.res.fecha===fechaBase()&&m.res.turno===turnoBase();
+const RESM=['Sin novedad','Falta de personal','Rotación del vehículo','A disposición de la superioridad','Otro'];
+function est(m){if(!m.activo)return'BAJA';if(m.fs)return'FS';const s=servA(m.id);if(s)return s.ret?'RET':'SERV';return resVig(m)?'RES':'DISP'}
 const exced=s=>!s.finReal&&Date.now()>new Date(s.finPrev);
 const dotActiva=dni=>S.servicios.find(s=>!s.finReal&&s.dot.some(d=>d.dni===dni&&!d.hasta));
 function aptitud(p,fecha){if(p.baja)return{ok:false,mot:'Baja: '+p.baja.motivo};const now=fecha&&fecha>hoyISO()?new Date(fecha+'T12:00:00').getTime():Date.now();const x=p.sit.find(z=>new Date(z.desde)<=now&&(!z.hasta||now<=new Date(z.hasta)));
  if(x)return{ok:false,mot:x.tipo+(x.hasta?' hasta '+fmt(x.hasta).slice(0,5):'')};if(!p.calle)return{ok:false,mot:'No es personal de calle'};return{ok:true,mot:''}}
 const canEdit=uid=>{const r=rol();return r.edit&&(!r.dir||r.dir===dirOf(uid))};
-const ESTB={DISP:['ok','Disponible'],SERV:['info','En servicio'],RET:['pur','Ocupado'],FS:['bad','Fuera de servicio'],BAJA:['gray','Dado de baja']};
+const ESTB={DISP:['ok','Disponible'],SERV:['info','En servicio'],RET:['pur','Ocupado'],FS:['bad','Fuera de servicio'],BAJA:['gray','Dado de baja'],RES:['rsv','Reservado']};
 const bEst=m=>{const [c,t]=ESTB[est(m)];return`<span class="b ${c}">${t}</span>`};
 const movTxt=m=>`${m.matricula} · ${m.dominio}`;
 
-function cuenta(ms){const c={tot:ms.length,SERV:0,DISP:0,RET:0,FS:0,fsG:0,fsL:0,exc:0,solo:0};
+function cuenta(ms){const c={tot:ms.length,SERV:0,DISP:0,RET:0,RES:0,FS:0,fsG:0,fsL:0,exc:0,solo:0};
  for(const m of ms){const e=est(m);c[e]++;if(e==='FS')MO[m.fs.motivo].grav==='grave'?c.fsG++:c.fsL++;
   const s=servA(m.id);if(s){if(exced(s)&&!s.ret)c.exc++;if(s.dot.filter(d=>!d.hasta).length<2)c.solo++}}return c}
 
@@ -308,8 +321,15 @@ const canEditDir=d=>{const r=rol();return r.edit&&(!r.dir||r.dir===d)};
 const sinAgendar=d=>S.moviles.filter(m=>m.activo&&dirOf(usa(m))===d&&est(m)==='DISP');
 
 // reclamos del Administrador General a los cargadores: el cargador los ve hasta resolverlos
+// un reclamo se cierra solo cuando lo pedido ya está cumplido
+function revisarReclamos(){for(const x of S.reclamos){if(!x.abierto)continue;const m=x.movil&&MM[x.movil];
+ const ok=m?!!servA(m.id)||est(m)==='RES'||!m.activo:!sinAgendar(x.dir).length;
+ if(ok){x.abierto=false;x.resuelto=iso();x.por='Sistema';x.auto=true;S.audit.push({ts:iso(),u:'Sistema',acc:'Reclamo resuelto',det:`${x.texto} · se resolvió solo: ${m?'el móvil ya está agendado o reservado':'ya no hay móviles sin agendar'} · a los ${dur(x.ts)}`,movil:x.movil||null,dni:null})}}}
+function vResueltos(r){const l=S.reclamos.filter(x=>!x.abierto&&(!r.dir||x.dir===r.dir)&&Date.now()-new Date(x.resuelto)<864e5).reverse();if(!l.length)return'';
+ return`<details class="mas"><summary>Resueltos en las últimas 24 Hs (${l.length})</summary><div class="tw" style="margin:8px 0 0"><table><tr><th>Resuelto</th><th>A</th><th>Pedido</th><th>Cómo</th><th>Tardó</th></tr>${l.map(x=>`<tr><td>${fmt(x.resuelto)}</td><td>${DIRN[x.dir]}</td><td>${esc(x.texto)}</td><td>${x.auto?'<span class="b ok">Se resolvió solo</span>':`<span class="b info">Marcado por ${esc(x.por)}</span>`}</td><td>${durEntre(x.ts,x.resuelto)}</td></tr>`).join('')}</table></div></details>`}
+const durEntre=(a,b)=>{const m=Math.max(0,Math.round((new Date(b)-new Date(a))/6e4));return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'};
 function vReclamos(){
- const r=rol(),ab=S.reclamos.filter(x=>x.abierto&&(!r.dir||x.dir===r.dir));if(!ab.length)return'';
+ const r=rol(),ab=S.reclamos.filter(x=>x.abierto&&(!r.dir||x.dir===r.dir));if(!ab.length){const z=vResueltos(r);return z?`<div class="card" style="margin-bottom:14px"><b>Reclamos</b><div class="small muted">No hay reclamos pendientes.</div>${z}</div>`:''}
  const tit=r.dir?`Reclamos del Administrador General (${ab.length})`:`Reclamos enviados sin resolver (${ab.length})`;
  return`<div class="card" style="margin-bottom:14px;border-color:var(--warn)"><b style="color:var(--warn)">${tit}</b>
   <div class="tw" style="margin:8px 0 0"><table><tr><th>Enviado</th><th>A</th><th>Pedido</th><th>Ahora</th><th>Hace</th><th></th></tr>${ab.map(x=>{
@@ -317,18 +337,18 @@ function vReclamos(){
    const ahora=m?(s?'<span class="b ok">Ya agendado</span>':m.fs?'<span class="b bad">Fuera de servicio</span>':'<span class="b bad">Sigue sin agendar</span>')
     :`<span class="b ${n?'bad':'ok'}">${n?n+' sin agendar':'Todo agendado'}</span>`;
    return`<tr><td>${fmt(x.ts)}</td><td>${DIRN[x.dir]}</td><td>${esc(x.texto)}</td><td>${ahora}</td><td>${dur(x.ts)}</td>
-    <td>${canEditDir(x.dir)?`<button class="btn" data-act="resolverRec" data-id="${x.id}">Marcar resuelto</button>`:''}${m&&!s&&canEdit(usa(m))?` <button class="btn pri" data-act="ficha" data-id="${m.id}">Agendar</button>`:''}</td></tr>`}).join('')}</table></div></div>`;
+    <td>${canEditDir(x.dir)?`<button class="btn" data-act="resolverRec" data-id="${x.id}">Marcar resuelto</button>`:''}${m&&!s&&canEdit(usa(m))?` <button class="btn pri" data-act="ficha" data-id="${m.id}">Agendar</button>`:''}</td></tr>`}).join('')}</table></div>${vResueltos(r)}</div>`;
 }
 
 function vControl(){
  const r=rol(),act=S.moviles.filter(m=>m.activo),dv=r.dir?[r.dir]:DIRS;
  const T=S.turnos.find(t=>t.id===turnoBase()),[ini,fin]=rango(fechaBase(),T);
  let h=`<h2>Control en vivo</h2><div class="small muted" style="margin:-6px 0 12px">${T.nombre} en curso · ${fmt(ini.toISOString())} a ${fmt(fin.toISOString())} · se actualiza solo · última actualización ${hm(iso())}</div>`;
- h+=vReclamos();
+ revisarReclamos();h+=vReclamos();
  // reportes de frecuencia
  const ra=S.reportes.filter(x=>x.abierto&&(!r.dir||!x.movil||dirOf(usa(MM[x.movil]))===r.dir));
  h+=`<div class="card" style="margin-bottom:14px"><b>Móvil escuchado en frecuencia</b><div class="small muted">Si un móvil sale por frecuencia, cargá su designación, interno o patente: el sistema dice si está agendado y, si no, deja una alerta para su dirección.</div>
-  <div class="row"><input type="text" id="rf" placeholder="Ej. URCA10, 100 o AG247UZ" style="text-transform:uppercase"><button class="btn pri" data-act="reportar">Verificar</button></div>
+  <div class="row"><input type="text" id="rf" placeholder="Ej. URCA10, 100 o AG247UZ" style="text-transform:uppercase"><button class="btn pri" data-act="reportar">Verificar</button></div>${vResFrec()}
   ${ra.length?`<div class="tw" style="margin:10px 0 0"><table><tr><th>Hora</th><th>Móvil</th><th>Dirección</th><th>Ahora</th><th>Reportó</th><th></th></tr>${ra.map(x=>{const m=x.movil&&MM[x.movil],s=m&&servA(m.id);
    return`<tr><td>${fmt(x.ts)}</td><td>${m?movTxt(m):`<b>${esc(x.txt)}</b> <span class="b bad">no figura en la flota</span>`}</td><td>${m?short(usa(m))+' · '+DIRN[dirOf(usa(m))]:'—'}</td>
    <td>${m?(s?`<span class="b ok">Ya agendado</span>`:`<span class="b bad">Sigue sin agendar</span>`):'—'}</td><td class="muted">${esc(x.u)}</td>
@@ -337,14 +357,14 @@ function vControl(){
  h+=`<div class="grid">`;
  const sinAgTodos=[],incompletos=[];
  for(const d of dv){
-  const en=act.filter(m=>dirOf(usa(m))===d),sinAg=en.filter(m=>est(m)==='DISP'),serv=en.map(m=>servA(m.id)).filter(Boolean),fs=en.filter(m=>m.fs);
+  const en=act.filter(m=>dirOf(usa(m))===d),sinAg=en.filter(m=>est(m)==='DISP'),serv=en.map(m=>servA(m.id)).filter(Boolean),fs=en.filter(m=>m.fs),rsv=en.filter(m=>est(m)==='RES');
   const inc=serv.filter(s=>{const a=s.dot.filter(x=>!x.hasta);return a.length<2||!a.some(x=>x.rol==='Chofer')});
   sinAgTodos.push(...sinAg);incompletos.push(...inc);
   const pers=S.personal.filter(p=>!p.baja&&dirPers(p)===d),libres=pers.filter(p=>aptitud(p).ok&&!dotActiva(p.dni)).length,enMov=pers.filter(p=>dotActiva(p.dni)).length;
   const recib=S.prestPers.filter(q=>!q.hasta&&q.fecha===fechaBase()&&q.turno===turnoBase()&&dirOf(q.destino)===d).length;
   h+=`<section class="card"><h3>Dirección ${DIRN[d]}</h3>
    <div class="big" style="color:${sinAg.length?'var(--bad)':'var(--ok)'}">${sinAg.length}<span>móviles sin agendar</span></div>
-   <div class="chips"><span class="b info">Agendados ${serv.length}</span><span class="b bad">Fuera de servicio ${fs.length}</span>${inc.length?`<span class="b warn">Dotación incompleta ${inc.length}</span>`:''}</div>
+   <div class="chips"><span class="b info">Agendados ${serv.length}</span><span class="b bad">Fuera de servicio ${fs.length}</span>${rsv.length?`<span class="b rsv">Reservados ${rsv.length}</span>`:''}${inc.length?`<span class="b warn">Dotación incompleta ${inc.length}</span>`:''}</div>
    <div class="chips"><span class="b ok">Personal apto libre ${libres}</span><span class="b info">En móvil ${enMov}</span>${recib?`<span class="b warn">Recibidos en préstamo ${recib}</span>`:''}</div>
    ${r.prestar&&sinAg.length?`<div class="row"><button class="btn dan" data-act="reclamarDir" data-d="${d}">Reclamar a ${DIRN[d]} los ${sinAg.length} sin agendar</button></div>`:''}</section>`}
  h+=`</div>`;
@@ -365,7 +385,7 @@ function vControl(){
 function vRecuento(){
  const act=S.moviles.filter(m=>m.activo);
  const card=(t,sub,c)=>`<section class="card"><h3>${t}</h3><div class="big">${c.tot}<span>móviles</span></div><div class="small muted">${sub}</div>
-  <div class="chips"><span class="b info">En servicio ${c.SERV}</span><span class="b ok">Disponibles ${c.DISP}</span><span class="b pur">Ocupados ${c.RET}</span><span class="b bad">Fuera de servicio ${c.FS}${c.FS?` (grave ${c.fsG} · leve ${c.fsL})`:''}</span></div>
+  <div class="chips"><span class="b info">En servicio ${c.SERV}</span><span class="b ok">Disponibles ${c.DISP}</span><span class="b pur">Ocupados ${c.RET}</span><span class="b rsv">Reservados ${c.RES}</span><span class="b bad">Fuera de servicio ${c.FS}${c.FS?` (grave ${c.fsG} · leve ${c.fsL})`:''}</span></div>
   ${c.exc?`<div class="alert warn">${c.exc} servicio(s) excedido(s) del horario sin motivo cargado</div>`:''}
   ${c.solo?`<div class="alert gray">${c.solo} móvil(es) con menos de 2 integrantes</div>`:''}</section>`;
  let h=`<h2>Recuento en este momento</h2><div class="grid">`;
@@ -374,16 +394,17 @@ function vRecuento(){
   const rec=act.filter(m=>{const p=prest(m.id);return p&&dirOf(p.destino)===d&&dirOf(m.unidad)!==d}).length;
   h+=card('Dirección '+DIRN[d],`Propios ${prop.length} · prestados a otra −${pa} · recibidos +${rec}`,cuenta(act.filter(m=>dirOf(usa(m))===d)))}
  h+=card('Total Dirección General','Todas las direcciones',cuenta(act))+`</div>`;
- const filaT=t=>{const l=act.filter(m=>m.programa===t),n=k=>l.filter(m=>est(m)===k).length;return`<tr><td><div class="movcel">${logoTipo(t)}${t}</div></td><td class="n">${l.length}</td><td class="n">${n('SERV')}</td><td class="n">${n('DISP')}</td><td class="n">${n('RET')}</td><td class="n">${n('FS')}</td></tr>`};
- h+=`<h3>Por tipo de móvil</h3><div class="tw"><table><tr><th>Tipo</th><th class="n">Total</th><th class="n">En servicio</th><th class="n">Disponibles</th><th class="n">Ocupados</th><th class="n">Fuera de servicio</th></tr>${filaT('Ojos en Alerta')}${filaT('Policial')}</table></div>`;
- h+=`<h3>Por departamento</h3><div class="tw"><table><tr><th>Departamento</th><th class="n">Total</th><th class="n">En servicio</th><th class="n">Disponibles</th><th class="n">Ocupados</th><th class="n">Fuera de servicio</th></tr>`;
+ const filaT=t=>{const l=act.filter(m=>m.programa===t),n=k=>l.filter(m=>est(m)===k).length;return`<tr><td><div class="movcel">${logoTipo(t)}${t}</div></td><td class="n">${l.length}</td><td class="n">${n('SERV')}</td><td class="n">${n('DISP')}</td><td class="n">${n('RET')}</td><td class="n">${n('RES')}</td><td class="n">${n('FS')}</td></tr>`};
+ h+=`<h3>Por tipo de móvil</h3><div class="tw"><table><tr><th>Tipo</th><th class="n">Total</th><th class="n">En servicio</th><th class="n">Disponibles</th><th class="n">Ocupados</th><th class="n">Reservados</th><th class="n">Fuera de servicio</th></tr>${filaT('Ojos en Alerta')}${filaT('Policial')}</table></div>`;
+ h+=`<h3>Por departamento</h3><div class="tw"><table><tr><th>Departamento</th><th class="n">Total</th><th class="n">En servicio</th><th class="n">Disponibles</th><th class="n">Ocupados</th><th class="n">Reservados</th><th class="n">Fuera de servicio</th></tr>`;
  for(const dp of S.unidades.filter(z=>z.tipo==='departamento')){const c=cuenta(act.filter(m=>depOf(usa(m))===dp.id));
-  h+=`<tr><td>${short(dp.id)} <span class="muted small">(${DIRN[dp.padre]})</span></td><td class="n">${c.tot}</td><td class="n">${c.SERV}</td><td class="n">${c.DISP}</td><td class="n">${c.RET}</td><td class="n">${c.FS}</td></tr>`}
+  h+=`<tr><td>${short(dp.id)} <span class="muted small">(${DIRN[dp.padre]})</span></td><td class="n">${c.tot}</td><td class="n">${c.SERV}</td><td class="n">${c.DISP}</td><td class="n">${c.RET}</td><td class="n">${c.RES}</td><td class="n">${c.FS}</td></tr>`}
  h+=`</table></div>`;
- const faltan=act.filter(m=>{const e=est(m),s=servA(m.id);return e==='FS'||e==='RET'||(s&&exced(s))});
+ const faltan=act.filter(m=>{const e=est(m),s=servA(m.id);return e==='FS'||e==='RET'||e==='RES'||(s&&exced(s))});
  h+=`<h3>Móviles que faltan y por qué (${faltan.length})</h3><div class="tw"><table><tr><th>Móvil</th><th>Lo usa</th><th>Estado</th><th>Motivo</th><th>Desde</th><th>Hace</th></tr>`;
  for(const m of faltan){const s=servA(m.id);let mot,desde;
   if(m.fs){const mo=MO[m.fs.motivo];mot=`${mo.nombre} <span class="b ${mo.grav==='grave'?'bad':'warn'}">${mo.grav}</span> ${esc(m.fs.obs)}`;desde=m.fs.desde}
+  else if(est(m)==='RES'){mot=`${esc(m.res.motivo)} ${esc(m.res.obs)}`;desde=m.res.ts}
   else if(s.ret){mot=MO[s.ret.motivo].nombre+' '+esc(s.ret.obs);desde=s.ret.desde}
   else{mot=`<span class="b warn">Excedido del horario</span> fin previsto ${fmt(s.finPrev)}, sin motivo cargado`;desde=s.finPrev}
   h+=`<tr class="click" data-act="ficha" data-id="${m.id}"><td>${s?radOf(s)+' · ':''}${movTxt(m)}</td><td>${short(usa(m))}</td><td>${bEst(m)}</td><td>${mot}</td><td>${fmt(desde)}</td><td>${dur(desde)}</td></tr>`}
@@ -413,7 +434,7 @@ function vMoviles(){
   .sort((a,b)=>short(usa(a)).localeCompare(short(usa(b)),'es',{numeric:true})||a.matricula-b.matricula);
  const chip=(k,txt,n)=>`<button class="fchip${ui.fEst===k?' on':''}" data-act="fEst" data-v="${k}">${txt} <b>${n}</b></button>`;
  let h=(r.dir?vReclamos():'')+`<h2>Móviles</h2><div class="small muted" style="margin:-8px 0 10px">Turno actual: ${T.nombre} (${T.hi} a ${T.hf}). Tocá un móvil para asignarle personal y designación.</div>
- <div class="fchips">${chip('','Todos',c(''))}${chip('DISP','Disponibles',c('DISP'))}${chip('SERV','En servicio',c('SERV'))}${chip('RET','Ocupados',c('RET'))}${chip('FS','Fuera de servicio',c('FS'))}${bajas.length?chip('BAJA','Dados de baja',bajas.length):''}</div>
+ <div class="fchips">${chip('','Todos',c(''))}${chip('DISP','Disponibles',c('DISP'))}${chip('SERV','En servicio',c('SERV'))}${chip('RET','Ocupados',c('RET'))}${chip('RES','Reservados',c('RES'))}${chip('FS','Fuera de servicio',c('FS'))}${bajas.length?chip('BAJA','Dados de baja',bajas.length):''}</div>
  <div class="fchips">${chipT('Ojos en Alerta')}${chipT('Policial')}</div>
  <div class="filters">${r.dir?'':`<select data-ui="fDir">${opts([['','Todas las direcciones'],...DIRS.map(d=>[d,DIRN[d]])],ui.fDir)}</select>`}
   <select data-ui="fDiv">${opts([['','Todas las divisiones'],...divs.map(d=>[d,short(d)])],ui.fDiv)}</select>
@@ -467,8 +488,10 @@ function vFicha(id){
  if(m.fs){const mo=MO[m.fs.motivo];h+=`<div class="paso"><b>Fuera de servicio</b><div>${mo.nombre} <span class="b ${mo.grav==='grave'?'bad':'warn'}">${mo.grav}</span> ${esc(m.fs.obs)} <span class="muted">(desde ${fmt(m.fs.desde)})</span></div></div>
   ${ed?`<button class="btn pri ancho grande" data-act="disp" data-id="${id}">Volver a disponible</button>`:''}`}
  else if(s)h+=secServicio(s,ed&&!!s);
+ else if(est(m)==='RES'){const T=S.turnos.find(t=>t.id===m.res.turno);h+=`<div class="paso"><b>Reservado en esta guardia</b><div>No sale en el ${T.nombre}: ${esc(m.res.motivo)}${m.res.obs?' · '+esc(m.res.obs):''}</div><div class="small muted">Lo reservó ${esc(m.res.por)} a las ${hm(m.res.ts)}. No cuenta como sin agendar. En la próxima guardia vuelve solo a disponible.</div></div>${ed?`<button class="btn pri ancho grande" data-act="quitarRes" data-id="${id}">Quitar reserva y agendarlo</button>`:''}`}
  else if(ed)h+=secAsignar(m);
  else h+=`<div class="muted">Disponible, sin personal asignado.${r.edit?' Lo carga su dirección.':''}</div>`;
+ if(ed&&est(m)==='DISP')h+=`<details class="mas"><summary>No sale en esta guardia (reservado)</summary><div class="small muted">Para un móvil que no sale pero no tiene ninguna novedad. Deja de figurar como sin agendar solo en esta guardia.</div><div class="row"><select id="rsm">${opts(RESM.map(x=>[x,x]))}</select><input type="text" id="rso" placeholder="Observación (opcional)" autocomplete="off"><button class="btn" data-act="reservar" data-id="${id}">Reservar</button></div></details>`;
  if(ed&&!m.fs)h+=`<details class="mas"><summary>Tuvo un problema (accidente, falla mecánica, batería…)</summary>${s?'<div class="small muted">Se termina el servicio y se libera el personal.</div>':''}
   <div class="row"><select id="fsm">${opts(S.motivos.filter(z=>z.cat==='FS').map(z=>[z.id,z.nombre+' ('+z.grav+')']))}</select><input type="text" id="fso" placeholder="Detalle (opcional)"><button class="btn dan" data-act="fs" data-id="${id}">Marcar fuera de servicio</button></div></details>`;
  // entre divisiones de su dirección presta el cargador; hacia otra dirección, solo el Administrador General
@@ -743,6 +766,10 @@ function aplicarCambio(tipo,ref,antes,despues,acc){const e=entidad(tipo,ref),ks=
 function btnDes(a){if(!a.cambio||!rol().edit)return'';const c=S.cambios.find(z=>z.id===a.cambio);if(!c||ultimoCambio(c.tipo,c.ref)!==c)return'';const e=entidad(c.tipo,c.ref);
  return e&&canEdit(e.unidad)?`<button class="btn" data-act="deshacer" data-c="${c.id}">Deshacer</button>`:''}
 
+function vResFrec(){const r=ui.rfRes;if(!r)return'';const ic={ok:'✓',bad:'✕',warn:'!'}[r.tipo];
+ return`<div class="res ${r.tipo}" role="status"><div class="res-ic" aria-hidden="true">${ic}</div><div class="res-c"><div class="res-t">${r.tit}${r.q?` <span class="res-q">${esc(r.q)}</span>`:''}</div>${r.det.map(x=>`<div>${x}</div>`).join('')}
+ <div class="res-p"><span class="small muted">Consultado a las ${r.ts}</span>${r.ver?`<button class="btn" data-act="ficha" data-id="${r.ver}">Ver móvil</button>`:''}<button class="btn" data-act="rfCerrar">Cerrar</button></div></div></div>`}
+
 function vPersonal(){
  const verB=ui.pApto==='baja',fp=filtroTol(S.personal.filter(p=>{const a=aptitud(p);return!!p.baja===verB&&persPropio(p)&&(rol().dir||!ui.pDir||dirOf(p.unidad)===ui.pDir)&&(verB||!ui.pApto||(ui.pApto==='si'?a.ok:ui.pApto==='no'?!a.ok:a.mot.startsWith(ui.pApto)))}),camposPers,ui.pTxt),ps=fp.l;
  const lim=ps.slice(0,300);
@@ -788,6 +815,10 @@ const A={
  cerrarDlg(){$('#dlg').close();ui.ficha=null;ui.fichaP=null},
  pers(el){openPers(Number(el.dataset.dni))},
  fEst(el){ui.fEst=el.dataset.v},
+ reservar(el){const m=MM[el.dataset.id];if(!canEdit(usa(m)))return toast('Solo puede reservarlo su Dirección o el General');if(est(m)!=='DISP')return toast('Solo se reserva un móvil disponible');
+  const T=S.turnos.find(t=>t.id===turnoBase());m.res={fecha:fechaBase(),turno:turnoBase(),motivo:$('#rsm').value,obs:$('#rso').value.trim(),por:rol().nombre,ts:iso()};
+  log('Móvil reservado',`${movTxt(m)} no sale en el ${T.nombre} del ${fechaBase().split('-').reverse().join('/')}: ${m.res.motivo}${m.res.obs?' ('+m.res.obs+')':''}`,m.id);toast('Reservado por esta guardia. No cuenta como sin agendar')},
+ quitarRes(el){const m=MM[el.dataset.id];if(!canEdit(usa(m)))return toast('Solo puede cambiarlo su Dirección o el General');log('Reserva quitada',`${movTxt(m)} vuelve a disponible`,m.id);delete m.res;toast('Vuelve a disponible')},
  deshacer(el){const c=S.cambios.find(z=>z.id===el.dataset.c),e=c&&entidad(c.tipo,c.ref);if(!e)return toast('No se encontró el cambio');
   if(!canEdit(e.unidad))return toast('Solo puede deshacerlo su Dirección o el General');
   if(ultimoCambio(c.tipo,c.ref)!==c)return toast('Solo se puede deshacer el último cambio. Deshacé primero los posteriores');
@@ -822,15 +853,18 @@ const A={
   const motivo=$('#bj-mot').value;m.activo=false;m.baja={motivo,fecha:$('#bj-fec').value||hoyISO(),obs:$('#bj-obs').value.trim(),por:rol().nombre,ts:iso()};log('Baja de móvil',`${movTxt(m)}: ${motivo}${m.baja.obs?' ('+m.baja.obs+')':''}`,m.id);toast('Móvil dado de baja')},
  reincM(el){const m=MM[el.dataset.id];if(!canEdit(m.unidad))return toast('Solo puede reactivarlo su Dirección o el General');log('Móvil reactivado',`${movTxt(m)}. Baja anterior: ${m.baja.motivo}`,m.id);m.activo=true;delete m.baja;toast('Móvil reactivado')},
  fProg(el){ui.fProg=ui.fProg===el.dataset.v?'':el.dataset.v},
- reportar(){const t=$('#rf').value.trim().toUpperCase();if(!t)return toast('Cargá el dominio o la matrícula');
-  const m=resMov(t),s=m&&servA(m.id);
-  if(s)return toast(`${movTxt(m)} está agendado como ${radOf(s)} en ${short(s.unidad)} (${DIRN[dirOf(s.unidad)]}). Está en orden.`);
+ reportar(){const t=$('#rf').value.trim().toUpperCase(),hora=hm(iso());if(!t){ui.rfRes={tipo:'warn',tit:'Escribí la designación, el interno o la patente',det:[],ts:hora};return}
+  const m=resMov(t),s=m&&servA(m.id),ver=m&&movPropio(m)?m.id:null,ld=s=>[`<b class="rad">${radOf(s)}</b> · Móvil ${movTxt(MM[s.movil])}`,`${short(s.unidad)} · Dirección ${DIRN[dirOf(s.unidad)]}`,`Turno de ${hm(s.inicio)} a ${hm(s.finPrev)} · ${s.dot.filter(d=>!d.hasta).length} integrante(s)`];
+  if(s){ui.rfRes={tipo:'ok',tit:'Está agendado',det:[...ld(s),...(s.ret?[`Ocupado: ${MO[s.ret.motivo].nombre}`]:[])],q:t,ts:hora,ver};return}
   const v=S.servicios.find(z=>!z.finReal&&z.radHist.some(x=>x.rad===normRad(t)));
-  if(v)return toast(`${normRad(t)} ahora opera como ${radOf(v)}: móvil ${movTxt(MM[v.movil])} en ${short(v.unidad)}.`);
-  if(S.reportes.some(x=>x.abierto&&(m?x.movil===m.id:x.txt===t)))return toast('Ya hay una alerta abierta para ese móvil');
+  if(v){ui.rfRes={tipo:'ok',tit:'Está agendado con otra designación',det:[`${esc(normRad(t))} ahora opera como <b class="rad">${radOf(v)}</b>`,...ld(v).slice(1)],q:t,ts:hora,ver:movPropio(MM[v.movil])?v.movil:null};return}
+  const ya=S.reportes.find(x=>x.abierto&&(m?x.movil===m.id:x.txt===t));
+  if(ya){ui.rfRes={tipo:'bad',tit:'No está agendado',det:[m?`Móvil ${movTxt(m)} · ${short(usa(m))} · Dirección ${DIRN[dirOf(usa(m))]}`:`${esc(t)} no figura en la flota`,`Ya hay una alerta abierta desde las ${hm(ya.ts)}.`],q:t,ts:hora,ver};return}
   S.reportes.push({id:'R'+(S.reportes.length+1),ts:iso(),txt:t,movil:m?m.id:null,u:rol().nombre,abierto:true});
   log('Reporte de frecuencia',m?`${movTxt(m)} salió por frecuencia sin estar agendado (${short(usa(m))})`:`"${t}" salió por frecuencia y no figura en la flota`,m?m.id:null);
-  toast(m?(m.fs?`${movTxt(m)} figura FUERA DE SERVICIO y salió por frecuencia. Alerta creada.`:`${movTxt(m)} NO está agendado. Alerta creada para ${DIRN[dirOf(usa(m))]}.`):`"${t}" no figura en la flota ni en la agenda. Alerta creada.`)},
+  ui.rfRes=m?{tipo:'bad',tit:m.fs?'Figura fuera de servicio':'No está agendado',det:[`Móvil ${movTxt(m)} · ${esc(m.marca)} ${esc(m.modelo)}`,`${short(usa(m))} · Dirección ${DIRN[dirOf(usa(m))]}`,...(m.fs?[`Motivo: ${MO[m.fs.motivo].nombre}`]:[]),`Se creó una alerta para la Dirección ${DIRN[dirOf(usa(m))]}.`],q:t,ts:hora,ver}
+   :{tipo:'bad',tit:'No figura en la flota ni en la agenda',det:[`Revisá cómo se escuchó: ${esc(t)}`,'Se creó una alerta para revisarlo.'],q:t,ts:hora}},
+ rfCerrar(){ui.rfRes=null},
  reclamarDir(el){const d=el.dataset.d,ms=sinAgendar(d);if(!ms.length)return toast('No hay móviles sin agendar en '+DIRN[d]);
   if(S.reclamos.some(x=>x.abierto&&x.dir===d&&!x.movil))return toast('Ya hay un reclamo general abierto para '+DIRN[d]);
   const por={};ms.forEach(m=>{const k=short(usa(m));por[k]=(por[k]||0)+1});
@@ -842,7 +876,7 @@ const A={
   S.reclamos.push({id:'RC'+(S.reclamos.length+1),ts:iso(),dir:d,movil:m.id,texto,u:rol().nombre,abierto:true});
   log('Reclamo a '+DIRN[d],texto,m.id);toast('Reclamo enviado al cargador de '+DIRN[d])},
  resolverRec(el){const x=S.reclamos.find(z=>z.id===el.dataset.id);x.abierto=false;x.resuelto=iso();x.por=rol().nombre;
-  log('Reclamo resuelto',`${x.texto} · respondido a los ${dur(x.ts)}`,x.movil)},
+  log('Reclamo resuelto',`${x.texto} · respondido a los ${dur(x.ts)}`,x.movil);toast('Reclamo resuelto: pasó al historial')},
  resolver(el){const x=S.reportes.find(z=>z.id===el.dataset.id);x.abierto=false;x.resuelto=iso();log('Alerta resuelta',`Reporte de frecuencia: ${x.movil?movTxt(MM[x.movil]):x.txt}`,x.movil)},
  prestarP(el){const dni=Number(el.dataset.dni),p=PM[dni],dest=$('#ppd').value,f=$('#ppf').value,t=$('#ppt').value;
   if(!aptitud(p).ok)return toast('No apto: '+aptitud(p).mot);if(dotActiva(dni))return toast('Primero bajalo del móvil donde está');if(!f)return toast('Elegí la fecha de la guardia');
@@ -889,7 +923,7 @@ function pasar(el){const s=servById(el.dataset.s),t=servById(el.value),dni=Numbe
  d.hasta=now;t.dot.push({dni,rol:d.rol,desde:now,hasta:null});log('Cambio de móvil',`${p.jer} ${p.nom} pasa de ${movTxt(MM[s.movil])} a ${movTxt(MM[t.movil])}`,s.movil);toast('Integrante pasado al otro móvil')}
 
 // acciones permitidas también al usuario de solo consulta (Monitoreo puede reportar lo que escucha en frecuencia)
-const LIBRES=new Set(['reset','vaciar','tab','ficha','pers','cerrarDlg','fEst','fProg','reportar']);
+const LIBRES=new Set(['reset','vaciar','tab','ficha','pers','cerrarDlg','fEst','fProg','reportar','rfCerrar']);
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const fn=A[el.dataset.act];if(!fn)return;
  if(!LIBRES.has(el.dataset.act)&&!rol().edit)return toast('Usuario de solo consulta');
  fn(el);render()});
