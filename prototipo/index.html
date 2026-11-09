@@ -95,6 +95,16 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .res-q{font-weight:600;color:var(--text,inherit);background:var(--panel);border-radius:6px;padding:1px 7px;margin-left:6px;font-size:13px}
 .res-p{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}.res-p .small{margin-right:auto}
 .b.rsv{background:var(--res-bg);color:var(--res)}
+.msel{position:relative}
+.msel>summary{list-style:none;cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 30px 8px 12px;min-width:170px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.msel>summary::-webkit-details-marker{display:none}
+.msel>summary::after{content:'▾';position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.msel.on>summary{border-color:var(--accent);color:var(--accent)}
+.msel-p{position:absolute;z-index:40;top:100%;left:0;margin-top:4px;min-width:240px;max-height:320px;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.35);padding:6px}
+.msel-o{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer}
+.msel-o:hover{background:var(--bg)}
+.msel-o span{flex:1}.msel-o b{color:var(--muted);font-weight:600;font-size:12px}
+.msel-a{border-top:1px solid var(--line);margin-top:4px;padding-top:6px}
 .okt{color:var(--ok)}.badt{color:var(--bad)}.warnt{color:var(--warn,#d9a441)}
 .libres{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}
 .libres .small{width:100%}
@@ -191,6 +201,7 @@ function filtroTol(lista,campos,q){const ok=[],par=[];for(const x of lista){cons
 const LOGOS={'Ojos en Alerta':'img/ojos-en-alerta.png','Policial':'img/policia-cordoba.png'};
 const logoTipo=t=>`<img class="lg" src="${LOGOS[t]}" alt="${t}" title="${t}">`;
 const logoMov=m=>logoTipo(m.programa);
+const conLogo=(m,txt)=>`<div class="movcel">${logoMov(m)}<div>${txt}</div></div>`;
 const H=36e5,D=864e5,KEY='agendaMoviles.v1';
 
 // ---------- utilidades ----------
@@ -276,9 +287,9 @@ function seed(vacio){
 
 // ---------- estado ----------
 let S,UM,MM,PM,MO;
-const ui={tab:'control',rol:'gral',fDir:'',fEst:'',fProg:'',fTxt:'',pDir:'',pApto:'',pTxt:'',aFecha:'',aTurno:'',aUnidad:'',ficha:null,fDiv:'',dr:{mov:'',rad:'',ch:'',je:'',a1:'',a2:''}};
+const ui={tab:'control',rol:'gral',fDir:[],fEst:[],fProg:[],fTxt:'',pDir:[],pDiv:[],pApto:[],pTxt:'',aFecha:'',aTurno:'',aUnidad:'',ficha:null,fDiv:[],dr:{mov:'',rad:'',ch:'',je:'',a1:'',a2:''}};
 function idx(){S.cambios=S.cambios||[];S.desigExtra=S.desigExtra||[];S.excDesig=S.excDesig||[];S.prestPers=S.prestPers||[];S.reportes=S.reportes||[];S.reclamos=S.reclamos||[];S.servicios.forEach(s=>{s.rad=s.rad||'';s.radHist=s.radHist||[]});UM=Object.fromEntries(S.unidades.map(z=>[z.id,z]));MM=Object.fromEntries(S.moviles.map(z=>[z.id,z]));PM=Object.fromEntries(S.personal.map(z=>[z.dni,z]));MO=Object.fromEntries(S.motivos.map(z=>[z.id,z]))}
-function load(){try{const j=localStorage.getItem(KEY);if(j)S=JSON.parse(j)}catch(e){}if(!S)S=seed(true);try{Object.assign(ui,JSON.parse(localStorage.getItem(KEY+'.ui')||'{}'))}catch(e){}ui.ficha=null;idx()}
+function load(){try{const j=localStorage.getItem(KEY);if(j)S=JSON.parse(j)}catch(e){}if(!S)S=seed(true);try{Object.assign(ui,JSON.parse(localStorage.getItem(KEY+'.ui')||'{}'))}catch(e){}ui.ficha=null;ui.mselAb=null;for(const k of FILTROS)ui[k]=arr(ui[k]);idx()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(KEY+'.ui',JSON.stringify(ui))}catch(e){}}
 const rol=()=>ROLES.find(r=>r.id===ui.rol)||ROLES[0];
 function log(acc,det,movil,dni){S.audit.push({ts:iso(),u:rol().nombre,acc,det,movil:movil||null,dni:dni||null})}
@@ -328,6 +339,10 @@ function revisarReclamos(){for(const x of S.reclamos){if(!x.abierto)continue;con
 function vResueltos(r){const l=S.reclamos.filter(x=>!x.abierto&&(!r.dir||x.dir===r.dir)&&Date.now()-new Date(x.resuelto)<864e5).reverse();if(!l.length)return'';
  return`<details class="mas"><summary>Resueltos en las últimas 24 Hs (${l.length})</summary><div class="tw" style="margin:8px 0 0"><table><tr><th>Resuelto</th><th>A</th><th>Pedido</th><th>Cómo</th><th>Tardó</th></tr>${l.map(x=>`<tr><td>${fmt(x.resuelto)}</td><td>${DIRN[x.dir]}</td><td>${esc(x.texto)}</td><td>${x.auto?'<span class="b ok">Se resolvió solo</span>':`<span class="b info">Marcado por ${esc(x.por)}</span>`}</td><td>${durEntre(x.ts,x.resuelto)}</td></tr>`).join('')}</table></div></details>`}
 const durEntre=(a,b)=>{const m=Math.max(0,Math.round((new Date(b)-new Date(a))/6e4));return m<60?m+' min':Math.floor(m/60)+' h '+(m%60)+' min'};
+// texto del pedido con lo que falta ahora; el reclamo por un móvil no cambia
+function pedidoRec(x){if(x.movil)return esc(x.texto);const ms=sinAgendar(x.dir),tot=x.total||Number((x.texto.match(/Faltan agendar (\d+)/)||[])[1])||ms.length,tur=x.turno||((x.texto.match(/en el ([^:]+):/)||[])[1]||'turno');
+ const por={};ms.forEach(m=>{const k=short(usa(m));por[k]=(por[k]||0)+1});const lista=Object.entries(por).sort((a,b)=>a[0].localeCompare(b[0],'es',{numeric:true})).map(([k,v])=>`${k} (${v})`).join(', ');
+ const hechos=tot-ms.length;return`Faltan agendar <b>${ms.length}</b> de ${tot} móviles en el ${esc(tur)}${lista?': '+lista:''}${hechos>0?`<div class="small okt">Ya se agendaron o reservaron ${hechos}</div>`:hechos<0?`<div class="small warnt">Hay ${-hechos} más que al reclamar</div>`:''}`}
 function vReclamos(){
  const r=rol(),ab=S.reclamos.filter(x=>x.abierto&&(!r.dir||x.dir===r.dir));if(!ab.length){const z=vResueltos(r);return z?`<div class="card" style="margin-bottom:14px"><b>Reclamos</b><div class="small muted">No hay reclamos pendientes.</div>${z}</div>`:''}
  const tit=r.dir?`Reclamos del Administrador General (${ab.length})`:`Reclamos enviados sin resolver (${ab.length})`;
@@ -336,7 +351,7 @@ function vReclamos(){
    const m=x.movil&&MM[x.movil],s=m&&servA(m.id),n=sinAgendar(x.dir).length;
    const ahora=m?(s?'<span class="b ok">Ya agendado</span>':m.fs?'<span class="b bad">Fuera de servicio</span>':'<span class="b bad">Sigue sin agendar</span>')
     :`<span class="b ${n?'bad':'ok'}">${n?n+' sin agendar':'Todo agendado'}</span>`;
-   return`<tr><td>${fmt(x.ts)}</td><td>${DIRN[x.dir]}</td><td>${esc(x.texto)}</td><td>${ahora}</td><td>${dur(x.ts)}</td>
+   return`<tr><td>${fmt(x.ts)}</td><td>${DIRN[x.dir]}</td><td>${pedidoRec(x)}</td><td>${ahora}</td><td>${dur(x.ts)}</td>
     <td>${canEditDir(x.dir)?`<button class="btn" data-act="resolverRec" data-id="${x.id}">Marcar resuelto</button>`:''}${m&&!s&&canEdit(usa(m))?` <button class="btn pri" data-act="ficha" data-id="${m.id}">Agendar</button>`:''}</td></tr>`}).join('')}</table></div>${vResueltos(r)}</div>`;
 }
 
@@ -350,7 +365,7 @@ function vControl(){
  h+=`<div class="card" style="margin-bottom:14px"><b>Móvil escuchado en frecuencia</b><div class="small muted">Si un móvil sale por frecuencia, cargá su designación, interno o patente: el sistema dice si está agendado y, si no, deja una alerta para su dirección.</div>
   <div class="row"><input type="text" id="rf" placeholder="Ej. URCA10, 100 o AG247UZ" style="text-transform:uppercase"><button class="btn pri" data-act="reportar">Verificar</button></div>${vResFrec()}
   ${ra.length?`<div class="tw" style="margin:10px 0 0"><table><tr><th>Hora</th><th>Móvil</th><th>Dirección</th><th>Ahora</th><th>Reportó</th><th></th></tr>${ra.map(x=>{const m=x.movil&&MM[x.movil],s=m&&servA(m.id);
-   return`<tr><td>${fmt(x.ts)}</td><td>${m?movTxt(m):`<b>${esc(x.txt)}</b> <span class="b bad">no figura en la flota</span>`}</td><td>${m?short(usa(m))+' · '+DIRN[dirOf(usa(m))]:'—'}</td>
+   return`<tr><td>${fmt(x.ts)}</td><td>${m?conLogo(m,movTxt(m)):`<b>${esc(x.txt)}</b> <span class="b bad">no figura en la flota</span>`}</td><td>${m?short(usa(m))+' · '+DIRN[dirOf(usa(m))]:'—'}</td>
    <td>${m?(s?`<span class="b ok">Ya agendado</span>`:`<span class="b bad">Sigue sin agendar</span>`):'—'}</td><td class="muted">${esc(x.u)}</td>
    <td>${(m?canEdit(usa(m)):rol().edit)?`<button class="btn" data-act="resolver" data-id="${x.id}">Resolver</button>`:''}${m&&!s&&canEdit(usa(m))?` <button class="btn pri" data-act="ficha" data-id="${m.id}">Agendar</button>`:''}</td></tr>`}).join('')}</table></div>`:''}</div>`;
  // tarjetas por dirección
@@ -377,7 +392,7 @@ function vControl(){
   <td><button class="btn" data-act="ficha" data-id="${m.id}">${canEdit(usa(m))?'Agendar':'Ver agenda'}</button>${r.prestar?` <button class="btn dan" data-act="reclamarMov" data-id="${m.id}"${S.reclamos.some(x=>x.abierto&&x.movil===m.id)?' disabled title="Ya reclamado"':''}>Reclamar</button>`:''}</td></tr>`}
  h+=`</table></div>`;
  if(incompletos.length){h+=`<h3>Agendados con dotación incompleta (${incompletos.length})</h3><div class="tw"><table><tr><th>Móvil</th><th>División</th><th>Integrantes</th><th>Problema</th><th></th></tr>`;
-  for(const s of incompletos){const a=s.dot.filter(x=>!x.hasta);h+=`<tr><td>${radOf(s)} · ${movTxt(MM[s.movil])}</td><td>${short(s.unidad)} · ${DIRN[dirOf(s.unidad)]}</td><td>${a.length}</td><td>${!a.length?'Sin dotación':!a.some(x=>x.rol==='Chofer')?'Sin chofer':'Sale con 1 integrante'}</td><td><button class="btn" data-act="ficha" data-id="${s.movil}">Ver</button></td></tr>`}
+  for(const s of incompletos){const a=s.dot.filter(x=>!x.hasta);h+=`<tr><td>${conLogo(MM[s.movil],`${radOf(s)} · ${movTxt(MM[s.movil])}`)}</td><td>${short(s.unidad)} · ${DIRN[dirOf(s.unidad)]}</td><td>${a.length}</td><td>${!a.length?'Sin dotación':!a.some(x=>x.rol==='Chofer')?'Sin chofer':'Sale con 1 integrante'}</td><td><button class="btn" data-act="ficha" data-id="${s.movil}">Ver</button></td></tr>`}
   h+=`</table></div>`}
  return h;
 }
@@ -407,15 +422,15 @@ function vRecuento(){
   else if(est(m)==='RES'){mot=`${esc(m.res.motivo)} ${esc(m.res.obs)}`;desde=m.res.ts}
   else if(s.ret){mot=MO[s.ret.motivo].nombre+' '+esc(s.ret.obs);desde=s.ret.desde}
   else{mot=`<span class="b warn">Excedido del horario</span> fin previsto ${fmt(s.finPrev)}, sin motivo cargado`;desde=s.finPrev}
-  h+=`<tr class="click" data-act="ficha" data-id="${m.id}"><td>${s?radOf(s)+' · ':''}${movTxt(m)}</td><td>${short(usa(m))}</td><td>${bEst(m)}</td><td>${mot}</td><td>${fmt(desde)}</td><td>${dur(desde)}</td></tr>`}
+  h+=`<tr class="click" data-act="ficha" data-id="${m.id}"><td>${conLogo(m,(s?radOf(s)+' · ':'')+movTxt(m))}</td><td>${short(usa(m))}</td><td>${bEst(m)}</td><td>${mot}</td><td>${fmt(desde)}</td><td>${dur(desde)}</td></tr>`}
  h+=`</table></div>`;
  const pa=S.prestamos.filter(p=>!p.hasta);
  h+=`<h3>Préstamos activos (${pa.length})</h3><div class="tw"><table><tr><th>Móvil</th><th>Dueño</th><th>Prestado a</th><th>Desde</th><th>Autorizó</th><th>Con dotación</th></tr>`;
- for(const p of pa){const m=MM[p.movil];h+=`<tr class="click" data-act="ficha" data-id="${m.id}"><td>${movTxt(m)}</td><td>${short(p.origen)} (${DIRN[dirOf(p.origen)]})</td><td>${short(p.destino)} (${DIRN[dirOf(p.destino)]})</td><td>${fmt(p.desde)}</td><td>${esc(p.autorizo)}</td><td>${p.conDot?'Sí':'No'}</td></tr>`}
+ for(const p of pa){const m=MM[p.movil];h+=`<tr class="click" data-act="ficha" data-id="${m.id}"><td>${conLogo(m,movTxt(m))}</td><td>${short(p.origen)} (${DIRN[dirOf(p.origen)]})</td><td>${short(p.destino)} (${DIRN[dirOf(p.destino)]})</td><td>${fmt(p.desde)}</td><td>${esc(p.autorizo)}</td><td>${p.conDot?'Sí':'No'}</td></tr>`}
  h+=`</table></div>`;
  const pp=S.prestPers.filter(q=>!q.hasta);
  h+=`<h3>Personal prestado (${pp.length})</h3><div class="tw"><table><tr><th>Persona</th><th>De</th><th>A</th><th>Guardia</th><th>Autorizó</th><th>Ahora en</th></tr>`;
- for(const q of pp){const p=PM[q.dni],s=dotActiva(q.dni);h+=`<tr class="click" data-act="pers" data-dni="${q.dni}"><td>${esc(p.jer)} ${esc(p.nom)}</td><td>${short(p.unidad)} (${DIRN[dirOf(p.unidad)]})</td><td>${short(q.destino)} (${DIRN[dirOf(q.destino)]})</td><td>${turTxt(q.fecha,q.turno)}</td><td>${esc(q.autorizo)}</td><td>${s?movTxt(MM[s.movil]):'<span class="muted">—</span>'}</td></tr>`}
+ for(const q of pp){const p=PM[q.dni],s=dotActiva(q.dni);h+=`<tr class="click" data-act="pers" data-dni="${q.dni}"><td>${esc(p.jer)} ${esc(p.nom)}</td><td>${short(p.unidad)} (${DIRN[dirOf(p.unidad)]})</td><td>${short(q.destino)} (${DIRN[dirOf(q.destino)]})</td><td>${turTxt(q.fecha,q.turno)}</td><td>${esc(q.autorizo)}</td><td>${s?conLogo(MM[s.movil],movTxt(MM[s.movil])):'<span class="muted">—</span>'}</td></tr>`}
  return h+`</table></div>`;
 }
 
@@ -424,21 +439,23 @@ function opts(list,sel){return list.map(([v,t])=>`<option value="${esc(v)}"${Str
 function vMoviles(){
  const r=rol(),T=S.turnos.find(z=>z.id===turnoBase());
  const afuera=m=>r.dir&&dirOf(usa(m))!==r.dir;
- const base=S.moviles.filter(m=>m.activo&&(r.dir?(dirOf(usa(m))===r.dir||dirOf(m.unidad)===r.dir):(!ui.fDir||dirOf(usa(m))===ui.fDir)));
+ const fDir=arr(ui.fDir),okDir=d=>!fDir.length||fDir.includes(d);
+ const base=S.moviles.filter(m=>m.activo&&(r.dir?(dirOf(usa(m))===r.dir||dirOf(m.unidad)===r.dir):okDir(dirOf(usa(m)))));
  const divs=[...new Set(base.map(m=>usa(m)))].sort((a,b)=>short(a).localeCompare(short(b),'es',{numeric:true}));
- if(ui.fDiv&&!divs.includes(ui.fDiv))ui.fDiv='';
- const bajas=S.moviles.filter(m=>!m.activo&&(r.dir?dirOf(m.unidad)===r.dir:(!ui.fDir||dirOf(m.unidad)===ui.fDir)));
- const enDiv=base.filter(m=>!ui.fDiv||usa(m)===ui.fDiv),vis=enDiv.filter(m=>!ui.fProg||m.programa===ui.fProg),c=k=>vis.filter(m=>!afuera(m)&&(!k||est(m)===k)).length;
- const chipT=t=>`<button class="fchip chipt${ui.fProg===t?' on':''}" data-act="fProg" data-v="${t}">${logoTipo(t)}${t} <b>${enDiv.filter(m=>!afuera(m)&&m.programa===t).length}</b></button>`;
- const fm=filtroTol(ui.fEst==='BAJA'?bajas:vis.filter(m=>!ui.fEst||est(m)===ui.fEst),camposMov,ui.fTxt),ms=fm.l
+ ui.fDiv=arr(ui.fDiv).filter(d=>divs.includes(d));const fDiv=ui.fDiv,fProg=arr(ui.fProg),fEst=arr(ui.fEst),okDiv=u=>!fDiv.length||fDiv.includes(u),okProg=m=>!fProg.length||fProg.includes(m.programa);
+ const bajas=S.moviles.filter(m=>!m.activo&&(r.dir?dirOf(m.unidad)===r.dir:okDir(dirOf(m.unidad))));
+ const enDiv=base.filter(m=>okDiv(usa(m))),vis=enDiv.filter(okProg),c=k=>vis.filter(m=>!afuera(m)&&(!k||est(m)===k)).length,bajasV=bajas.filter(m=>okDiv(m.unidad)&&okProg(m));
+ const chipT=t=>chipM('fProg',t,logoTipo(t)+t,enDiv.filter(m=>!afuera(m)&&m.programa===t).length,' chipt');
+ const fAct=fEst.filter(k=>k!=='BAJA'),lista=[...(!fEst.length?vis:vis.filter(m=>fAct.includes(est(m)))),...(fEst.includes('BAJA')?bajasV:[])];
+ const fm=filtroTol(lista,camposMov,ui.fTxt),ms=fm.l
   .sort((a,b)=>short(usa(a)).localeCompare(short(usa(b)),'es',{numeric:true})||a.matricula-b.matricula);
- const chip=(k,txt,n)=>`<button class="fchip${ui.fEst===k?' on':''}" data-act="fEst" data-v="${k}">${txt} <b>${n}</b></button>`;
- let h=(r.dir?vReclamos():'')+`<h2>Móviles</h2><div class="small muted" style="margin:-8px 0 10px">Turno actual: ${T.nombre} (${T.hi} a ${T.hf}). Tocá un móvil para asignarle personal y designación.</div>
- <div class="fchips">${chip('','Todos',c(''))}${chip('DISP','Disponibles',c('DISP'))}${chip('SERV','En servicio',c('SERV'))}${chip('RET','Ocupados',c('RET'))}${chip('RES','Reservados',c('RES'))}${chip('FS','Fuera de servicio',c('FS'))}${bajas.length?chip('BAJA','Dados de baja',bajas.length):''}</div>
+ const chip=(k,txt,n)=>chipM('fEst',k,txt,n);
+ let h=(r.dir?vReclamos():'')+`<h2>Móviles</h2><div class="small muted" style="margin:-8px 0 10px">Turno actual: ${T.nombre} (${T.hi} a ${T.hf}). Tocá un móvil para asignarle personal y designación. En los filtros podés elegir más de una opción.</div>
+ <div class="fchips">${chip('','Todos',c(''))}${chip('DISP','Disponibles',c('DISP'))}${chip('SERV','En servicio',c('SERV'))}${chip('RET','Ocupados',c('RET'))}${chip('RES','Reservados',c('RES'))}${chip('FS','Fuera de servicio',c('FS'))}${bajas.length?chip('BAJA','Dados de baja',bajasV.length):''}</div>
  <div class="fchips">${chipT('Ojos en Alerta')}${chipT('Policial')}</div>
- <div class="filters">${r.dir?'':`<select data-ui="fDir">${opts([['','Todas las direcciones'],...DIRS.map(d=>[d,DIRN[d]])],ui.fDir)}</select>`}
-  <select data-ui="fDiv">${opts([['','Todas las divisiones'],...divs.map(d=>[d,short(d)])],ui.fDiv)}</select>
-  <input type="search" data-ui="fTxt" placeholder="Interno, patente o designación" value="${esc(ui.fTxt)}">${fm.parecidos?'<span class="warnt small">Sin coincidencia exacta: se muestran parecidos</span>':''}${r.edit?'<button class="btn pri" data-act="formM">Agregar móvil</button>':''}</div>
+ <div class="filters">${r.dir?'':msel('fDir','Todas las direcciones',DIRS.map(d=>[d,DIRN[d],S.moviles.filter(m=>m.activo&&dirOf(usa(m))===d).length]),'direcciones')}
+  ${msel('fDiv','Todas las divisiones',divs.map(d=>[d,short(d),base.filter(m=>usa(m)===d).length]),'divisiones')}
+  <input type="search" data-ui="fTxt" placeholder="Interno, patente o designación" value="${esc(ui.fTxt)}">${hayFiltros(['fDir','fDiv','fEst','fProg'])?'<button class="btn" data-act="limpiarF" data-g="m">Limpiar filtros</button>':''}${fm.parecidos?'<span class="warnt small">Sin coincidencia exacta: se muestran parecidos</span>':''}${r.edit?'<button class="btn pri" data-act="formM">Agregar móvil</button>':''}</div>
  <div class="tw"><table><tr><th>Móvil</th><th>Designación</th><th>Personal</th><th>Estado</th></tr>`;
  let grp=null;
  for(const m of ms){const g=usa(m),s=servA(m.id),p=prest(m.id),a=s?s.dot.filter(d=>!d.hasta):[],ed=canEdit(g)&&!afuera(m);
@@ -770,16 +787,32 @@ function vResFrec(){const r=ui.rfRes;if(!r)return'';const ic={ok:'✓',bad:'✕'
  return`<div class="res ${r.tipo}" role="status"><div class="res-ic" aria-hidden="true">${ic}</div><div class="res-c"><div class="res-t">${r.tit}${r.q?` <span class="res-q">${esc(r.q)}</span>`:''}</div>${r.det.map(x=>`<div>${x}</div>`).join('')}
  <div class="res-p"><span class="small muted">Consultado a las ${r.ts}</span>${r.ver?`<button class="btn" data-act="ficha" data-id="${r.ver}">Ver móvil</button>`:''}<button class="btn" data-act="rfCerrar">Cerrar</button></div></div></div>`}
 
+// ---------- filtros de selección múltiple: dentro de un filtro suma (o), entre filtros restringe (y) ----------
+const FILTROS=['fDir','fDiv','fEst','fProg','pDir','pDiv','pApto'];
+const arr=v=>Array.isArray(v)?v:(v?[v]:[]);
+function msel(key,todos,ops,plural){const sel=arr(ui[key]),nom=v=>{const o=ops.find(x=>x[0]===v);return o?o[1]:v};
+ const txt=!sel.length?todos:sel.length<=2?sel.map(nom).join(', '):`${sel.length} ${plural}`;
+ return`<details class="msel${sel.length?' on':''}" data-msel="${key}"${ui.mselAb===key?' open':''}><summary>${esc(txt)}</summary><div class="msel-p">${ops.map(([v,t,n])=>`<label class="msel-o"><input type="checkbox" data-mselk="${key}" value="${esc(v)}"${sel.includes(v)?' checked':''}><span>${esc(t)}</span>${n!=null?`<b>${n}</b>`:''}</label>`).join('')}${sel.length?`<div class="msel-a"><button class="btn" data-act="mselLimpiar" data-k="${key}">Quitar selección</button></div>`:''}</div></details>`}
+const chipM=(key,v,txt,n,extra)=>{const sel=arr(ui[key]),on=v===''?!sel.length:sel.includes(v);return`<button class="fchip${extra||''}${on?' on':''}" data-act="tg" data-k="${key}" data-v="${v}" aria-pressed="${on}">${txt} <b>${n}</b></button>`};
+const hayFiltros=ks=>ks.some(k=>arr(ui[k]).length);
+
 function vPersonal(){
- const verB=ui.pApto==='baja',fp=filtroTol(S.personal.filter(p=>{const a=aptitud(p);return!!p.baja===verB&&persPropio(p)&&(rol().dir||!ui.pDir||dirOf(p.unidad)===ui.pDir)&&(verB||!ui.pApto||(ui.pApto==='si'?a.ok:ui.pApto==='no'?!a.ok:a.mot.startsWith(ui.pApto)))}),camposPers,ui.pTxt),ps=fp.l;
+ const r=rol(),pDir=arr(ui.pDir),pApto=arr(ui.pApto);
+ const base=S.personal.filter(p=>persPropio(p)&&(r.dir||!pDir.length||pDir.includes(dirOf(p.unidad))));
+ const divs=[...new Set(base.map(p=>p.unidad))].sort((a,b)=>short(a).localeCompare(short(b),'es',{numeric:true}));
+ ui.pDiv=arr(ui.pDiv).filter(d=>divs.includes(d));const pDiv=ui.pDiv,enDiv=base.filter(p=>!pDiv.length||pDiv.includes(p.unidad));
+ const cumple=(p,k)=>{if(k==='baja')return!!p.baja;if(p.baja)return false;const a=aptitud(p);return k==='si'?a.ok:k==='no'?!a.ok:k==='calle'?!p.calle:a.mot.startsWith(k)};
+ const SIT=[['si','Aptos para móvil'],['no','No aptos (todos)'],['TNO','En TNO'],['Licencia','De licencia'],['Suspensión','Suspendidos'],['calle','No son de calle'],['baja','Dados de baja']];
+ const fp=filtroTol(enDiv.filter(p=>!pApto.length?!p.baja:pApto.some(k=>cumple(p,k))),camposPers,ui.pTxt),ps=fp.l;
  const lim=ps.slice(0,300);
- let h=`<h2>Personal</h2><div class="filters">${rol().dir?'':`<select data-ui="pDir">${opts([['','Todas las direcciones'],...DIRS.map(d=>[d,DIRN[d]])],ui.pDir)}</select>`}
-  <select data-ui="pApto">${opts([['','Aptos y no aptos'],['si','Solo aptos para móvil'],['no','Solo no aptos'],['TNO','En TNO'],['Licencia','De licencia'],['Suspensión','Suspendidos'],['baja','Dados de baja']],ui.pApto)}</select>
-  <input type="search" data-ui="pTxt" placeholder="Nombre o DNI" value="${esc(ui.pTxt)}"><span class="muted small">${ps.length} personas${ps.length>300?' (se muestran 300)':''}</span>${fp.parecidos?'<span class="warnt small">Sin coincidencia exacta: se muestran parecidos</span>':''}${rol().edit?'<button class="btn pri" data-act="formP">Agregar personal</button>':''}</div>
+ let h=`<h2>Personal</h2><div class="filters">${r.dir?'':msel('pDir','Todas las direcciones',DIRS.map(d=>[d,DIRN[d],S.personal.filter(p=>!p.baja&&dirOf(p.unidad)===d).length]),'direcciones')}
+  ${msel('pDiv','Todas las divisiones',divs.map(d=>[d,short(d),base.filter(p=>!p.baja&&p.unidad===d).length]),'divisiones')}
+  ${msel('pApto','Situación: todas (activos)',SIT.map(([k,t])=>[k,t,enDiv.filter(p=>cumple(p,k)).length]),'situaciones')}
+  <input type="search" data-ui="pTxt" placeholder="Nombre o DNI" value="${esc(ui.pTxt)}">${hayFiltros(['pDir','pDiv','pApto'])?'<button class="btn" data-act="limpiarF" data-g="p">Limpiar filtros</button>':''}<span class="muted small">${ps.length} personas${ps.length>300?' (se muestran 300)':''}</span>${fp.parecidos?'<span class="warnt small">Sin coincidencia exacta: se muestran parecidos</span>':''}${r.edit?'<button class="btn pri" data-act="formP">Agregar personal</button>':''}</div>
   <div class="small muted" style="margin:-4px 0 10px">Tocá una persona para ver su detalle, editarla, cargarle un pase o darla de baja.</div>
   <div class="tw"><table><tr><th>DNI</th><th>Jerarquía</th><th>Apellido y nombre</th><th>División</th><th>Función</th><th>Apto para móvil</th><th>Préstamo</th><th>Ahora en</th></tr>`;
  for(const p of lim){const a=aptitud(p),s=dotActiva(p.dni),q=prestP(p.dni);
-  h+=`<tr class="click" data-act="pers" data-dni="${p.dni}"><td>${p.dni}</td><td>${esc(p.jer)}</td><td>${esc(p.nom)}</td><td>${short(p.unidad)}</td><td>${esc(p.funcion)}</td><td>${a.ok?'<span class="b ok">Apto</span>':`<span class="b ${a.mot.startsWith('TNO')?'pur':'gray'}">${esc(a.mot)}</span>`}</td><td>${q?`<span class="b warn">Prestado</span> a ${short(q.destino)} · ${turTxt(q.fecha,q.turno)}`:'<span class="muted">—</span>'}</td><td>${s?`${radOf(s)} · ${movTxt(MM[s.movil])} · ${short(s.unidad)} (${DIRN[dirOf(s.unidad)]})`:'<span class="muted">—</span>'}</td></tr>`}
+  h+=`<tr class="click" data-act="pers" data-dni="${p.dni}"><td>${p.dni}</td><td>${esc(p.jer)}</td><td>${esc(p.nom)}</td><td>${short(p.unidad)}</td><td>${esc(p.funcion)}</td><td>${a.ok?'<span class="b ok">Apto</span>':`<span class="b ${a.mot.startsWith('TNO')?'pur':'gray'}">${esc(a.mot)}</span>`}</td><td>${q?`<span class="b warn">Prestado</span> a ${short(q.destino)} · ${turTxt(q.fecha,q.turno)}`:'<span class="muted">—</span>'}</td><td>${s?conLogo(MM[s.movil],`${radOf(s)} · ${movTxt(MM[s.movil])} · ${short(s.unidad)} (${DIRN[dirOf(s.unidad)]})`):'<span class="muted">—</span>'}</td></tr>`}
  return h+`</table></div>`;
 }
 
@@ -814,7 +847,9 @@ const A={
  ficha(el){openFicha(el.dataset.id)},
  cerrarDlg(){$('#dlg').close();ui.ficha=null;ui.fichaP=null},
  pers(el){openPers(Number(el.dataset.dni))},
- fEst(el){ui.fEst=el.dataset.v},
+ tg(el){const k=el.dataset.k,v=el.dataset.v,l=arr(ui[k]);ui[k]=v===''?[]:l.includes(v)?l.filter(x=>x!==v):[...l,v]},
+ mselLimpiar(el){ui[el.dataset.k]=[]},
+ limpiarF(el){for(const k of el.dataset.g==='m'?['fDir','fDiv','fEst','fProg']:['pDir','pDiv','pApto'])ui[k]=[];ui.mselAb=null},
  reservar(el){const m=MM[el.dataset.id];if(!canEdit(usa(m)))return toast('Solo puede reservarlo su Dirección o el General');if(est(m)!=='DISP')return toast('Solo se reserva un móvil disponible');
   const T=S.turnos.find(t=>t.id===turnoBase());m.res={fecha:fechaBase(),turno:turnoBase(),motivo:$('#rsm').value,obs:$('#rso').value.trim(),por:rol().nombre,ts:iso()};
   log('Móvil reservado',`${movTxt(m)} no sale en el ${T.nombre} del ${fechaBase().split('-').reverse().join('/')}: ${m.res.motivo}${m.res.obs?' ('+m.res.obs+')':''}`,m.id);toast('Reservado por esta guardia. No cuenta como sin agendar')},
@@ -852,7 +887,6 @@ const A={
  bajaM(el){const m=MM[el.dataset.id];if(!canEdit(m.unidad))return toast('Solo puede darlo de baja su Dirección o el General');if(servA(m.id))return toast('Primero terminá el servicio');if(prest(m.id))return toast('Primero devolvé el móvil prestado');
   const motivo=$('#bj-mot').value;m.activo=false;m.baja={motivo,fecha:$('#bj-fec').value||hoyISO(),obs:$('#bj-obs').value.trim(),por:rol().nombre,ts:iso()};log('Baja de móvil',`${movTxt(m)}: ${motivo}${m.baja.obs?' ('+m.baja.obs+')':''}`,m.id);toast('Móvil dado de baja')},
  reincM(el){const m=MM[el.dataset.id];if(!canEdit(m.unidad))return toast('Solo puede reactivarlo su Dirección o el General');log('Móvil reactivado',`${movTxt(m)}. Baja anterior: ${m.baja.motivo}`,m.id);m.activo=true;delete m.baja;toast('Móvil reactivado')},
- fProg(el){ui.fProg=ui.fProg===el.dataset.v?'':el.dataset.v},
  reportar(){const t=$('#rf').value.trim().toUpperCase(),hora=hm(iso());if(!t){ui.rfRes={tipo:'warn',tit:'Escribí la designación, el interno o la patente',det:[],ts:hora};return}
   const m=resMov(t),s=m&&servA(m.id),ver=m&&movPropio(m)?m.id:null,ld=s=>[`<b class="rad">${radOf(s)}</b> · Móvil ${movTxt(MM[s.movil])}`,`${short(s.unidad)} · Dirección ${DIRN[dirOf(s.unidad)]}`,`Turno de ${hm(s.inicio)} a ${hm(s.finPrev)} · ${s.dot.filter(d=>!d.hasta).length} integrante(s)`];
   if(s){ui.rfRes={tipo:'ok',tit:'Está agendado',det:[...ld(s),...(s.ret?[`Ocupado: ${MO[s.ret.motivo].nombre}`]:[])],q:t,ts:hora,ver};return}
@@ -869,7 +903,7 @@ const A={
   if(S.reclamos.some(x=>x.abierto&&x.dir===d&&!x.movil))return toast('Ya hay un reclamo general abierto para '+DIRN[d]);
   const por={};ms.forEach(m=>{const k=short(usa(m));por[k]=(por[k]||0)+1});
   const T=S.turnos.find(t=>t.id===turnoBase()),texto=`Faltan agendar ${ms.length} móviles en el ${T.nombre}: `+Object.entries(por).sort((a,b)=>a[0].localeCompare(b[0],'es',{numeric:true})).map(([k,v])=>`${k} (${v})`).join(', ');
-  S.reclamos.push({id:'RC'+(S.reclamos.length+1),ts:iso(),dir:d,movil:null,texto,u:rol().nombre,abierto:true});
+  S.reclamos.push({id:'RC'+(S.reclamos.length+1),ts:iso(),dir:d,movil:null,texto,total:ms.length,turno:T.nombre,u:rol().nombre,abierto:true});
   log('Reclamo a '+DIRN[d],texto);toast('Reclamo enviado al cargador de '+DIRN[d])},
  reclamarMov(el){const m=MM[el.dataset.id],d=dirOf(usa(m));if(S.reclamos.some(x=>x.abierto&&x.movil===m.id))return toast('Ese móvil ya fue reclamado');
   const texto=`Falta agendar ${movTxt(m)} (${short(usa(m))})`;
@@ -923,7 +957,7 @@ function pasar(el){const s=servById(el.dataset.s),t=servById(el.value),dni=Numbe
  d.hasta=now;t.dot.push({dni,rol:d.rol,desde:now,hasta:null});log('Cambio de móvil',`${p.jer} ${p.nom} pasa de ${movTxt(MM[s.movil])} a ${movTxt(MM[t.movil])}`,s.movil);toast('Integrante pasado al otro móvil')}
 
 // acciones permitidas también al usuario de solo consulta (Monitoreo puede reportar lo que escucha en frecuencia)
-const LIBRES=new Set(['reset','vaciar','tab','ficha','pers','cerrarDlg','fEst','fProg','reportar','rfCerrar']);
+const LIBRES=new Set(['reset','vaciar','tab','ficha','pers','cerrarDlg','tg','mselLimpiar','limpiarF','reportar','rfCerrar']);
 document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const fn=A[el.dataset.act];if(!fn)return;
  if(!LIBRES.has(el.dataset.act)&&!rol().edit)return toast('Usuario de solo consulta');
  fn(el);render()});
@@ -935,7 +969,8 @@ document.addEventListener('input',e=>{const t=e.target,k=t.dataset||{};
  if(k.ui&&t.type==='search'){ui[k.ui]=t.value;render()}
  if(k.dr){if(k.dr==='radNum')t.value=t.value.replace(/\D/g,'');if(k.dr==='radN')ui.dr.radExc=false;ui.dr[k.dr]=t.value;refrescarCarga()}
  if(k.pickS){const s=servById(k.pickS);$('#h-add-'+s.id).innerHTML=hintP(t.value,ctxServ(s))}});
-document.addEventListener('change',e=>{const t=e.target;if(t.id==='rol'){ui.rol=t.value;render();if($('#dlg').open)openFicha(ui.ficha);return}
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset&&t.dataset.mselk){const k=t.dataset.mselk,l=arr(ui[k]);ui[k]=t.checked?[...l,t.value]:l.filter(x=>x!==t.value);ui.mselAb=k;render();return}if(t.id==='rol'){ui.rol=t.value;render();if($('#dlg').open)openFicha(ui.ficha);return}
  if(t.dataset.ui&&t.type!=='search'){ui[t.dataset.ui]=t.value;render();return}
  if(t.dataset.chg==='pasar'&&t.value){pasar(t);render()}});
 $('#dlg').addEventListener('close',()=>{ui.ficha=null;ui.fichaP=null});
@@ -944,10 +979,12 @@ const DRORD=['radN','radNum','ch','je','a1','a2'];
 function buscar(q){const t=q.trim();if(!t)return;const m=resMov(t);if(m){if(!movPropio(m))return toast('Ese móvil es de otra dirección');return openFicha(m.id)}const p=resPers(t);
  const ir=/\d/.test(t)&&!(p&&typeof p==='object')&&!(typeof p==='number'&&p)?movParecidos(t):[];
  if(ir.length===1)return openFicha(ir[0].id);
- if(ir.length){ui.tab='moviles';ui.fEst='';ui.fDiv='';ui.fTxt=t;render();return}
+ if(ir.length){ui.tab='moviles';ui.fEst=[];ui.fDiv=[];ui.fProg=[];ui.fTxt=t;render();return}
  if(p&&typeof p==='object'){if(!persPropio(p))return toast('Esa persona es de otra dirección');return openPers(p.dni)}
- if(p){ui.tab='personal';ui.pDir='';ui.pApto='';ui.pTxt=t;render();return}
+ if(p){ui.tab='personal';ui.pDir=[];ui.pDiv=[];ui.pApto=[];ui.pTxt=t;render();return}
  toast('No se encontró ningún móvil ni efectivo')}
+document.addEventListener('toggle',e=>{const d=e.target;if(!d.classList||!d.classList.contains('msel'))return;if(d.open){ui.mselAb=d.dataset.msel;document.querySelectorAll('details.msel[open]').forEach(x=>{if(x!==d)x.open=false})}else if(ui.mselAb===d.dataset.msel)ui.mselAb=null},true);
+document.addEventListener('click',e=>{if(ui.mselAb&&!e.target.closest('.msel')){ui.mselAb=null;document.querySelectorAll('details.msel[open]').forEach(x=>x.open=false)}},true);
 document.addEventListener('focusin',e=>{if(e.target.dataset&&e.target.dataset.combo)pintarCombo(e.target)});
 document.addEventListener('focusout',e=>{if(e.target.dataset&&e.target.dataset.combo)cerrarCombo(e.target)});
 document.addEventListener('mousedown',e=>{const t=e.target;
@@ -965,7 +1002,7 @@ document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const t=e.targ
  if(t.dataset&&t.dataset.dr){e.preventDefault();const i=DRORD.indexOf(t.dataset.dr);if(i<DRORD.length-1)$('#f-'+DRORD[i+1]).focus();else{A.cargar();render()}}});
 // "tiempo real" del prototipo: otra pestaña del mismo navegador que cambie datos actualiza esta al instante
 window.addEventListener('storage',e=>{if(e.key===KEY&&e.newValue){S=JSON.parse(e.newValue);idx();render()}});
-setInterval(()=>{const a=document.activeElement;if(ui.tab==='control'&&!$('#dlg').open&&!(a&&a.id==='rf'&&a.value))render()},30000);
+setInterval(()=>{const a=document.activeElement,escribe=a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)&&a.value;if(!$('#dlg').open&&!escribe)render()},15000);
 load();render();
 </script>
 </body>

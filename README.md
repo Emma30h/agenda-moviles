@@ -33,6 +33,7 @@ y abrir http://localhost:3000.
 - **Tipo de móvil:** Ojos en Alerta o Policial, con su logo en la lista y la ficha, filtro en Móviles y conteo en Recuento.
 - **Móviles:** pantalla principal del cargador. Lista los móviles de su dirección con su estado; al tocar uno se abre su agenda para asignar designación radial, horario y personal, marcarlo ocupado o fuera de servicio y terminar el servicio.
 - **Designaciones:** el nombre se escribe con sugerencias de su Dirección y el número es libre. Controla en vivo si la combinación está en uso. Un nombre nuevo se usa como excepción y el Administrador General puede sumarlo a la lista desde su pestaña **Designaciones**.
+- **Filtros:** todos permiten elegir varias opciones. Dentro de un filtro se suman y entre filtros se combinan.
 - **Buscador general:** DNI, interno, patente, designación radial o apellido. Todos los buscadores ignoran acentos, mayúsculas y signos, y admiten errores de tipeo.
 - **Personal:** aptitud (TNO, licencias, suspensiones) y préstamo de efectivos por guardia.
 - **Alta, edición y baja:** desde Personal y Móviles se agrega, edita, pasa de división o da de baja. Nada se borra: las bajas quedan con motivo y se pueden revertir.
