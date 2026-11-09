@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+/* Paleta oscura institucional (misma línea que el prototipo y los trabajos DMCA) */
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-2: #1c232d;
+  --line: #2a3340;
+  --text: #e6edf3;
+  --muted: #8b98a8;
+  --accent: #4f8cff;
+  --accent-ink: #ffffff;
+  --ok: #3fb97f;
+  --ok-bg: #12301f;
+  --warn: #e3b341;
+  --warn-bg: #3a2d10;
+  --bad: #f0776c;
+  --bad-bg: #3d1b18;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-fondo: var(--bg);
+  --color-panel: var(--panel);
+  --color-linea: var(--line);
+  --color-texto: var(--text);
+  --color-tenue: var(--muted);
+  --color-acento: var(--accent);
+  --font-sans: var(--font-geist-sans);
+}
+
+html, body { background: var(--bg); color: var(--text); }
+body { font-family: var(--font-geist-sans), system-ui, sans-serif; font-size: 15px; }
+a { color: var(--accent); }
+a:hover { text-decoration: underline; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+/* ---------- piezas reutilizables ---------- */
+.tarjeta { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.campo { display: block; }
+.campo > span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+.entrada {
+  width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 9px;
+  padding: 10px 12px; font: inherit; outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.entrada:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.entrada[aria-invalid="true"] { border-color: var(--bad); }
+select.entrada { appearance: auto; }
+.ayuda { font-size: 12.5px; margin-top: 5px; color: var(--muted); }
+.ayuda.mal { color: var(--bad); }
+.boton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 9px; padding: 10px 16px;
+  font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); cursor: pointer;
+  transition: filter .15s, opacity .15s;
+}
+.boton:hover { filter: brightness(1.15); text-decoration: none; }
+.boton:disabled { opacity: .55; cursor: not-allowed; }
+.boton.primario { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.boton.peligro { color: var(--bad); border-color: var(--bad); background: transparent; }
+.boton.ancho { width: 100%; }
+.aviso { border-radius: 10px; padding: 10px 12px; font-size: 14px; border: 1px solid; }
+.aviso.mal { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.aviso.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.aviso.atento { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.etiqueta { display: inline-block; border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 600; background: var(--panel-2); color: var(--muted); }
+.etiqueta.ok { background: var(--ok-bg); color: var(--ok); }
+.etiqueta.atento { background: var(--warn-bg); color: var(--warn); }
+.etiqueta.mal { background: var(--bad-bg); color: var(--bad); }
+.etiqueta.info { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); }
+.tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tabla th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); }
+.tabla td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.tabla tr:last-child td { border-bottom: 0; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; font-size: 13px; color: var(--text); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.chip:hover { text-decoration: none; filter: brightness(1.15); }
