@@ -175,22 +175,25 @@ export async function restablecerClave(_: EstadoFormulario, fd: FormData): Promi
 
   const correo = await correoDe(id);
   const supabase = await clienteSesion();
-  const { error } = correo
+  const verif = correo
     ? await supabase.auth.verifyOtp({ email: correo, token: codigo, type: "recovery" })
-    : { error: new Error("sin cuenta") };
-  if (error) {
+    : { data: { user: null }, error: new Error("sin cuenta") };
+  const usuario = verif.data.user?.id;
+  if (verif.error || !usuario) {
     await sumarIntento(clave);
     return { error: "El código no es correcto o ya venció.", errores: { codigo: "Código incorrecto o vencido" } };
   }
-  const cambio = await supabase.auth.updateUser({ password: nueva });
+  // El código ya probó que es la persona. Se cambia desde el servidor porque
+  // Supabase, por su cuenta, no deja repetir la contraseña anterior y acá sí se permite.
+  const cambio = await clienteAdmin().auth.admin.updateUserById(usuario, { password: nueva });
   if (cambio.error) {
-    const igual = cambio.error.message.toLowerCase().includes("different");
-    return { error: igual ? "La contraseña nueva tiene que ser distinta de la anterior." : "No se pudo cambiar la contraseña. Intentá de nuevo." };
+    console.error("[restablecerClave]", cambio.error);
+    return { error: "No se pudo cambiar la contraseña. Intentá de nuevo." };
   }
   // Se cierran las sesiones abiertas en otras computadoras
   await supabase.auth.signOut({ scope: "others" });
   await limpiarIntentos(clave);
   await limpiarIntentos("ing:" + id.valor);
-  await registrar("cambio_contrasena", { usuario: cambio.data.user?.id ?? null, identificador: id.valor });
+  await registrar("cambio_contrasena", { usuario, identificador: id.valor });
   redirect("/?clave=ok");
 }
