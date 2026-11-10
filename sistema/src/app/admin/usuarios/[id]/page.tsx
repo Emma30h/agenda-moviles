@@ -2,13 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { exigirSuperadmin } from "@/lib/dal";
 import { clienteAdmin } from "@/lib/supabase/admin";
-import { ESTADOS, ROLES, type Estado, type Rol } from "@/lib/reglas";
+import { ESTADOS, ROLES, type Estado, type Rol, nombreCompleto, TIPOS_PERSONAL, type TipoPersonal } from "@/lib/reglas";
 import { fecha, opcionesUnidades } from "../../datos";
 import { FormAcceso, FormAprobar, FormReactivar, FormRechazar, FormSuspender } from "../../formularios";
 import { NOMBRE_EVENTO } from "../../eventos";
 
 type Detalle = {
-  id: string; dni: string; apellido: string; nombre: string; jerarquia: string; telefono: string | null; correo: string; dependencia: string;
+  id: string; dni: string; apellido: string; nombre: string; jerarquia: string | null; tipo_personal: string; telefono: string | null; correo: string; dependencia: string;
   rol: Rol | null; rol_pedido: Rol; jurisdiccion: string | null; jurisdiccion_pedida: string | null; estado: Estado; motivo: string | null;
   revisado_en: string | null; creado_en: string;
 };
@@ -30,11 +30,12 @@ export default async function Usuario({ params }: { params: Promise<{ id: string
       <Link href="/admin/usuarios" className="text-sm">← Volver a usuarios</Link>
       <article className="tarjeta p-5 grid gap-4">
         <div className="flex flex-wrap justify-between gap-2">
-          <h2 className="text-lg font-semibold">{p.jerarquia} {p.apellido}, {p.nombre}</h2>
+          <h2 className="text-lg font-semibold">{nombreCompleto(p)}</h2>
           <span className="etiqueta self-start">{ESTADOS[p.estado]}</span>
         </div>
         <dl className="grid grid-cols-[auto_1fr] sm:grid-cols-[auto_1fr_auto_1fr] gap-x-4 gap-y-1 text-sm">
           <dt className="text-tenue">DNI</dt><dd>{p.dni}</dd>
+            <dt className="text-tenue">Tipo de personal</dt><dd>{TIPOS_PERSONAL[p.tipo_personal as TipoPersonal] ?? "—"}</dd>
           <dt className="text-tenue">Correo</dt><dd className="break-all">{p.correo}</dd>
           <dt className="text-tenue">Teléfono</dt><dd>{p.telefono || "—"}</dd>
           <dt className="text-tenue">Dependencia</dt><dd>{u.nombre(p.dependencia)}</dd>

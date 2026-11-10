@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Campo, CampoClave, Enviar, Formulario, Selector } from "@/components/formulario";
-import { JERARQUIAS, ROLES, ROLES_PEDIBLES } from "@/lib/reglas";
+import { jerarquiasDe, llevaJerarquia, ROLES, ROLES_PEDIBLES, TIPOS_PERSONAL } from "@/lib/reglas";
 import { ingresar, pedirRecuperacion, reenviarCodigo, restablecerClave, solicitarCuenta, verificarCorreo } from "./acciones";
 
 export type Unidad = { id: string; nombre: string; tipo: string; padre: string | null; orden: number };
@@ -50,6 +50,7 @@ export function FormSolicitud({ unidades }: { unidades: Unidad[] }) {
   const opciones = unidades
     .filter((u) => u.tipo !== "general")
     .map((u) => ({ valor: u.id, texto: (u.tipo === "division" ? "— " : u.tipo === "departamento" ? "· " : "") + u.nombre, grupo: etiquetaGrupo(u) }));
+  const [tipo, setTipo] = useState("");
   const [dependencia, setDependencia] = useState("");
   const [rol, setRol] = useState<string>("cargador");
   const [jurisdiccion, setJurisdiccion] = useState("");
@@ -67,9 +68,33 @@ export function FormSolicitud({ unidades }: { unidades: Unidad[] }) {
             </div>
             <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
               <Campo etiqueta="DNI" nombre="dni" estado={e} inputMode="numeric" maxLength={11} required ayuda="Sin puntos. También te sirve para ingresar." />
-              <Selector etiqueta="Jerarquía" nombre="jerarquia" estado={e} opciones={JERARQUIAS.map((j) => ({ valor: j, texto: j }))} />
+              <Campo etiqueta="Teléfono (opcional)" nombre="telefono" estado={e} type="tel" autoComplete="tel" />
             </div>
-            <Campo etiqueta="Teléfono (opcional)" nombre="telefono" estado={e} type="tel" autoComplete="tel" />
+            <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1 items-start">
+              <Selector
+                etiqueta="Tipo de personal"
+                nombre="tipo_personal"
+                estado={e}
+                opciones={Object.entries(TIPOS_PERSONAL).map(([valor, texto]) => ({ valor, texto }))}
+                valor={tipo}
+                onChange={setTipo}
+              />
+              {llevaJerarquia(tipo) ? (
+                <Selector
+                  key={tipo}
+                  etiqueta="Jerarquía"
+                  nombre="jerarquia"
+                  estado={e}
+                  opciones={jerarquiasDe(tipo).flatMap((g) => g.lista.map((j) => ({ valor: j, texto: j, grupo: g.grupo })))}
+                  ayuda={tipo === "tecnico" ? "El personal técnico usa las jerarquías de suboficial." : undefined}
+                />
+              ) : (
+                <div className="campo">
+                  <span>Jerarquía</span>
+                  <div className="entrada text-tenue">{tipo ? "No corresponde (personal civil)" : "Elegí primero el tipo de personal"}</div>
+                </div>
+              )}
+            </div>
           </fieldset>
 
           <fieldset className="grid gap-3">

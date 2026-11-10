@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { exigirSuperadmin } from "@/lib/dal";
 import { clienteAdmin } from "@/lib/supabase/admin";
-import { ESTADOS, ROLES, type Estado, type Rol } from "@/lib/reglas";
+import { ESTADOS, ROLES, type Estado, type Rol, nombreCompleto } from "@/lib/reglas";
 import { opcionesUnidades } from "../datos";
 import { FiltroChips, leerLista } from "../filtros";
 
-type Fila = { id: string; dni: string; apellido: string; nombre: string; jerarquia: string; correo: string; rol: Rol | null; rol_pedido: Rol; jurisdiccion: string | null; estado: Estado };
+type Fila = { id: string; dni: string; apellido: string; nombre: string; jerarquia: string | null; tipo_personal: string; correo: string; rol: Rol | null; rol_pedido: Rol; jurisdiccion: string | null; estado: Estado };
 const CLASE: Record<Estado, string> = { activo: "ok", en_revision: "atento", verificando: "", rechazado: "mal", suspendido: "mal" };
 
 export default async function Usuarios({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -14,7 +14,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
   const estados = leerLista(params.estado), roles = leerLista(params.rol);
   const q = String(params.q ?? "").trim().toLowerCase();
   const [{ data }, u] = await Promise.all([
-    clienteAdmin().from("perfil").select("id,dni,apellido,nombre,jerarquia,correo,rol,rol_pedido,jurisdiccion,estado").order("apellido"),
+    clienteAdmin().from("perfil").select("id,dni,apellido,nombre,tipo_personal,jerarquia,correo,rol,rol_pedido,jurisdiccion,estado").order("apellido"),
     opcionesUnidades(),
   ]);
   const todos = (data ?? []) as Fila[];
@@ -42,7 +42,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
           <tbody>
             {lista.map((f) => (
               <tr key={f.id}>
-                <td>{f.jerarquia} {f.apellido}, {f.nombre}<div className="text-[12.5px] text-tenue break-all">{f.correo}</div></td>
+                <td>{nombreCompleto(f)}<div className="text-[12.5px] text-tenue break-all">{f.correo}</div></td>
                 <td>{f.dni}</td>
                 <td>{f.rol ? ROLES[f.rol] : <span className="text-tenue">Pide: {ROLES[f.rol_pedido]}</span>}</td>
                 <td>{u.nombre(f.jurisdiccion)}</td>

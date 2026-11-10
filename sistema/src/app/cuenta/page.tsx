@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { leerSesion } from "@/lib/dal";
 import { salir } from "@/app/(acceso)/acciones";
-import { ROLES } from "@/lib/reglas";
+import { ROLES, nombreCompleto } from "@/lib/reglas";
 
 export const metadata: Metadata = { title: "Estado de la cuenta" };
 
@@ -35,7 +35,7 @@ export default async function Cuenta() {
         </div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
           <dt className="text-tenue">Nombre</dt>
-          <dd>{perfil.jerarquia} {perfil.apellido}, {perfil.nombre}</dd>
+          <dd>{nombreCompleto(perfil)}</dd>
           <dt className="text-tenue">Correo</dt>
           <dd>{perfil.correo}</dd>
           <dt className="text-tenue">Rol pedido</dt>

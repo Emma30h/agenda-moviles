@@ -53,7 +53,7 @@ export async function solicitarCuenta(_: EstadoFormulario, fd: FormData): Promis
     password: d.clave,
     options: {
       data: {
-        dni: d.dni, apellido: d.apellido, nombre: d.nombre, jerarquia: d.jerarquia, telefono: d.telefono,
+        dni: d.dni, apellido: d.apellido, nombre: d.nombre, tipo_personal: d.tipo_personal, jerarquia: d.jerarquia, telefono: d.telefono,
         dependencia: d.dependencia, rol_pedido: d.rol_pedido, jurisdiccion_pedida: d.jurisdiccion_pedida,
       },
     },
@@ -62,6 +62,7 @@ export async function solicitarCuenta(_: EstadoFormulario, fd: FormData): Promis
     const m = error.message.toLowerCase();
     if (m.includes("already")) return { error: "Ese correo ya tiene una cuenta.", errores: { correo: "Ese correo ya tiene una cuenta." }, valores };
     if (m.includes("rate")) return { error: "Se enviaron demasiados correos. Probá de nuevo en unos minutos.", valores };
+    if (m.includes("sending") && m.includes("email")) return { error: "No se pudo enviar el correo con el código. Avisale al administrador del sistema.", valores };
     if (m.includes("password")) return { error: "La contraseña no es aceptada. Probá con otra más larga.", valores };
     console.error("[solicitarCuenta]", error);
     return { error: "No se pudo crear la solicitud. Intentá de nuevo.", valores };

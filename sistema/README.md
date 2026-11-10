@@ -6,16 +6,17 @@ Hoy incluye: solicitud de cuenta con confirmación de correo, ingreso con correo
 
 ## Conectar Supabase (una sola vez)
 
-1. **Crear las tablas.** En Supabase: **SQL Editor → New query**, pegá todo el archivo `supabase/migraciones/0001_acceso.sql` y tocá **Run**.
+1. **Crear las tablas.** En Supabase: **SQL Editor → New query**, pegá todo el archivo `supabase/migraciones/0001_acceso.sql` y tocá **Run**. Después hacé lo mismo con `0002_tipo_personal.sql` (y con cada migración nueva, en orden).
 2. **Configurar el acceso** en **Authentication**:
    - **Sign In / Providers → Email:** activado, con **Confirm email** activado.
    - **Sign In / Providers → Email OTP Length:** 6. **Email OTP Expiration:** 900 segundos (15 minutos).
-   - **Policies → Passwords:** mínimo 10 caracteres, con mayúsculas, minúsculas y números.
+   - **Policies → Passwords:** mínimo 10 caracteres y **Lowercase, uppercase letters, digits and symbols**. La app pide lo mismo.
    - **URL Configuration → Site URL:** `http://localhost:3002` por ahora (después, el dominio de Vercel).
    - **Sessions:** dejá el token de acceso en 3600 segundos y la rotación de tokens de renovación activada (vienen así).
-3. **Plantillas de correo** en **Authentication → Emails** (Templates). Tienen que mostrar el **código** y no un enlace:
-   - **Confirm signup:** asunto `Tu código para confirmar la cuenta`, cuerpo con `Tu código es: <b>{{ .Token }}</b>. Vence en 15 minutos.`
-   - **Reset password:** asunto `Tu código para cambiar la contraseña`, cuerpo con `Tu código es: <b>{{ .Token }}</b>. Vence en 15 minutos. Si no lo pediste, ignorá este correo.`
+3. **Plantillas de correo** en **Authentication → Emails** (Templates). Recién se pueden editar después de conectar Brevo (paso de abajo). Pegá el contenido de `supabase/plantillas/` (desde `<table` hasta el final):
+   - **Confirm signup:** asunto `Agenda de Móviles · Código de confirmación de cuenta`, cuerpo `confirmar-cuenta.html`.
+   - **Reset password:** asunto `Agenda de Móviles · Código para cambiar la contraseña`, cuerpo `cambiar-clave.html`.
+   - Los logos se cargan desde el bucket público `publico` del Storage de Supabase (carpeta `correo/`).
 4. **Variables.** Copiá `.env.example` como `.env.local` y completalo con los datos de **Project Settings → API**. La clave **service_role** pegala vos directo en el archivo: nunca en el chat ni en otro lado.
 
 > Hasta configurar Brevo, Supabase manda los correos con su servicio de prueba: unos pocos por hora y solo a correos del equipo del proyecto. Alcanza para probar con tu propio correo.

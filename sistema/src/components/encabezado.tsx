@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { salir } from "@/app/(acceso)/acciones";
-import { ROLES } from "@/lib/reglas";
+import { ROLES, nombreCompleto } from "@/lib/reglas";
 import type { Perfil } from "@/lib/dal";
 
 export function Encabezado({ perfil }: { perfil: Perfil }) {
@@ -23,7 +23,7 @@ export function Encabezado({ perfil }: { perfil: Perfil }) {
           )}
           <div className="text-right leading-tight">
             <div>
-              {perfil.jerarquia} {perfil.apellido}, {perfil.nombre}
+              {nombreCompleto(perfil)}
             </div>
             <div className="text-[12px] text-tenue">{perfil.rol ? ROLES[perfil.rol] : ""}</div>
           </div>

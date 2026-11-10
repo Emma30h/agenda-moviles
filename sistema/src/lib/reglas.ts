@@ -20,11 +20,35 @@ export const ESTADOS = {
 } as const;
 export type Estado = keyof typeof ESTADOS;
 
-export const JERARQUIAS = [
-  "Agente", "Cabo", "Cabo 1º", "Sargento", "Sargento 1º", "Sargento Ayudante", "Suboficial Principal",
-  "Oficial Ayudante", "Oficial Subinspector", "Oficial Inspector", "Oficial Principal",
-  "Subcomisario", "Comisario", "Comisario Inspector", "Comisario Mayor", "Personal Civil",
+/** Tipos de personal (mismos que la app de Personal de la D.M.C.A). */
+export const TIPOS_PERSONAL = {
+  seguridad: "Seguridad",
+  tecnico: "Técnico",
+  civil_policial: "Civil Policial",
+  civil_becario: "Civil Becario",
+} as const;
+export type TipoPersonal = keyof typeof TIPOS_PERSONAL;
+export const TIPOS_PERSONAL_IDS = Object.keys(TIPOS_PERSONAL) as [TipoPersonal, ...TipoPersonal[]];
+
+export const JERARQUIAS_SUBOFICIAL = [
+  "Agente", "Cabo", "Cabo Primero", "Sargento", "Sargento Primero", "Sargento Ayudante", "Suboficial Principal", "Suboficial Mayor",
 ];
+export const JERARQUIAS_OFICIAL = [
+  "Oficial Ayudante", "Oficial Subinspector", "Oficial Inspector", "Oficial Principal",
+  "Subcomisario", "Comisario", "Comisario Inspector", "Comisario Mayor", "Comisario General",
+];
+
+/** Seguridad: suboficiales y oficiales · Técnico: solo las de suboficial · Civiles: sin jerarquía. */
+export function jerarquiasDe(tipo: string): { grupo: string; lista: string[] }[] {
+  if (tipo === "seguridad") return [{ grupo: "Suboficiales", lista: JERARQUIAS_SUBOFICIAL }, { grupo: "Oficiales", lista: JERARQUIAS_OFICIAL }];
+  if (tipo === "tecnico") return [{ grupo: "Suboficiales", lista: JERARQUIAS_SUBOFICIAL }];
+  return [];
+}
+export const llevaJerarquia = (tipo: string) => tipo === "seguridad" || tipo === "tecnico";
+
+/** "Sargento Pérez, Juan" o, si es civil, "Pérez, Juan". */
+export const nombreCompleto = (p: { jerarquia: string | null; apellido: string; nombre: string }) =>
+  `${p.jerarquia ? p.jerarquia + " " : ""}${p.apellido}, ${p.nombre}`;
 
 /** Requisitos de contraseña: se muestran en pantalla y se validan en el servidor. */
 export const REQUISITOS_CLAVE = [
@@ -32,6 +56,8 @@ export const REQUISITOS_CLAVE = [
   { id: "mayus", texto: "Una mayúscula", ok: (s: string) => /[A-ZÁÉÍÓÚÑ]/.test(s) },
   { id: "minus", texto: "Una minúscula", ok: (s: string) => /[a-záéíóúñ]/.test(s) },
   { id: "numero", texto: "Un número", ok: (s: string) => /[0-9]/.test(s) },
+  // Coincide con "Lowercase, uppercase letters, digits and symbols" de Supabase
+  { id: "simbolo", texto: "Un símbolo (! # @ $ …)", ok: (s: string) => /[^A-Za-z0-9ÁÉÍÓÚÑáéíóúñ\s]/.test(s) },
 ];
 export const claveValida = (s: string) => REQUISITOS_CLAVE.every((r) => r.ok(s));
 
@@ -42,7 +68,8 @@ export const esquemaSolicitud = z
     apellido: z.string().trim().min(2, "Escribí tu apellido").max(80),
     nombre: z.string().trim().min(2, "Escribí tu nombre").max(80),
     dni: z.string().transform(soloDigitos).refine((s) => /^[0-9]{7,8}$/.test(s), "El DNI tiene que tener 7 u 8 números"),
-    jerarquia: z.string().refine((s) => JERARQUIAS.includes(s), "Elegí tu jerarquía"),
+    tipo_personal: z.enum(TIPOS_PERSONAL_IDS, { errorMap: () => ({ message: "Elegí el tipo de personal" }) }),
+    jerarquia: z.string().optional().default(""),
     telefono: z.string().trim().max(30).optional().default(""),
     correo: z.string().trim().toLowerCase().email("Revisá el correo"),
     dependencia: z.string().min(1, "Elegí tu dependencia"),
@@ -51,7 +78,12 @@ export const esquemaSolicitud = z
     clave: z.string().refine(claveValida, "La contraseña no cumple los requisitos"),
     clave2: z.string(),
   })
-  .refine((d) => d.clave === d.clave2, { message: "Las contraseñas no coinciden", path: ["clave2"] });
+  .refine((d) => d.clave === d.clave2, { message: "Las contraseñas no coinciden", path: ["clave2"] })
+  .refine((d) => !llevaJerarquia(d.tipo_personal) || jerarquiasDe(d.tipo_personal).some((g) => g.lista.includes(d.jerarquia)), {
+    message: "Elegí tu jerarquía", path: ["jerarquia"],
+  })
+  // Los civiles no tienen jerarquía: se guarda vacía aunque llegue algo
+  .transform((d) => ({ ...d, jerarquia: llevaJerarquia(d.tipo_personal) ? d.jerarquia : "" }));
 
 /** Normaliza lo que se escribe para ingresar: un DNI (solo números) o un correo. */
 export function leerIdentificador(texto: string): { tipo: "dni" | "correo"; valor: string } | null {

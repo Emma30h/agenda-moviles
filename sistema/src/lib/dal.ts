@@ -10,7 +10,7 @@ export type Perfil = {
   dni: string;
   apellido: string;
   nombre: string;
-  jerarquia: string;
+  jerarquia: string | null; tipo_personal: string;
   correo: string;
   dependencia: string;
   rol: Rol | null;
@@ -33,7 +33,7 @@ export const leerSesion = cache(async (): Promise<{ perfil: Perfil | null }> => 
   if (!data.user) return { perfil: null };
   const { data: perfil } = await supabase
     .from("perfil")
-    .select("id,dni,apellido,nombre,jerarquia,correo,dependencia,rol,rol_pedido,jurisdiccion,estado,motivo")
+    .select("id,dni,apellido,nombre,tipo_personal,jerarquia,correo,dependencia,rol,rol_pedido,jurisdiccion,estado,motivo")
     .eq("id", data.user.id)
     .maybeSingle();
   return { perfil: (perfil as Perfil) ?? null };
