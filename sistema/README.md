@@ -39,6 +39,14 @@ Hoy incluye: solicitud de cuenta con confirmación de correo, ingreso con correo
 3. En Supabase, **Authentication → Emails → SMTP Settings:** activá *Custom SMTP* y cargá esos datos. Desde ahí, los códigos los manda Brevo.
 4. **SMTP & API → API Keys:** generá una clave y cargala en `BREVO_API_KEY` junto con `BREVO_FROM_EMAIL`. Se usa para los avisos de cuenta aprobada, rechazada o suspendida.
 
+## Publicar en Vercel
+
+1. En Vercel: **Add New → Project**, importar `agenda-moviles` desde GitHub.
+2. **Settings → Build and Deployment → Root Directory:** `sistema`.
+3. **Environment Variables:** las mismas de `.env.local`, con `NEXT_PUBLIC_SITE_URL` = la dirección pública (por ejemplo `https://agenda-moviles.vercel.app`).
+4. Cada cambio que llega a la rama `main` se publica solo.
+5. En Supabase, **Authentication → URL Configuration:** **Site URL** = la dirección pública y agregarla también en **Redirect URLs**.
+
 ## Levantar el sitio en esta PC
 
 La carpeta del proyecto tiene un `&` en el nombre y eso rompe `npm run dev` en Windows. Se levanta con:
