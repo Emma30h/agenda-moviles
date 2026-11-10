@@ -49,7 +49,8 @@ export async function aprobar(_: EstadoFormulario, fd: FormData): Promise<Estado
     .eq("id", objetivo.id);
   if (error) return { error: "No se pudo aprobar. Intentá de nuevo." };
   await registrar("aprobacion", { usuario: objetivo.id, actor: yo.id, detalle: `${ROLES[rol]} · ${jurisdiccion}` });
-  await avisos.aprobada(objetivo.correo, objetivo.nombre, ROLES[rol]);
+  const { data: unidad } = await db.from("unidad").select("nombre").eq("id", jurisdiccion).maybeSingle();
+  await avisos.aprobada(objetivo.correo, objetivo.nombre, ROLES[rol], unidad?.nombre ?? jurisdiccion);
   return listo(`Cuenta de ${objetivo.apellido}, ${objetivo.nombre} aprobada.`);
 }
 
