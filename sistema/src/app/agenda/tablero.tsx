@@ -8,6 +8,7 @@ import {
   coincide, crearArbol, diaHora, hoyCordoba, ESTADOS, estadoMovil, fechaCorta, hora, minutosVencido, nombrePersona, textoMovil,
   TOLERANCIA_RELEVO_MIN, type Designacion, type Estado, type FueraServicio, type Motivo, type Movil, type Persona,
   type Reclamo, type Reserva, type Servicio, type Situacion, type Turno, type Unidad, hace, NOMBRE_DIRECCION,
+  type Prestamo, type PrestamoPersona,
 } from "@/lib/agenda";
 import { resolverReclamo } from "../tablero/acciones";
 import { Gestion } from "./gestion";
@@ -15,6 +16,7 @@ import { Gestion } from "./gestion";
 export type Datos = {
   unidades: Unidad[]; turnos: Turno[]; motivos: Motivo[]; moviles: Movil[]; personal: Persona[]; situaciones: Situacion[];
   servicios: Servicio[]; fuera: FueraServicio[]; reservas: Reserva[]; designaciones: Designacion[]; reclamos: Reclamo[];
+  prestamos: Prestamo[]; prestamosPersonal: PrestamoPersona[];
 };
 
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
@@ -32,7 +34,7 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
   const [busqueda, setBusqueda] = useState("");
   const [abierto, setAbierto] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo"], "agenda");
+  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal"], "agenda");
   const [resolviendo, iniciar] = useTransition();
   const reclamosAbiertos = datos.reclamos.filter((r) => !r.resuelto_en && (raiz === "G" || r.direccion === raiz || arbol.dentro(r.direccion, raiz) || arbol.dentro(raiz, r.direccion)));
 
@@ -46,11 +48,15 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
   const motivos = useMemo(() => new Map(datos.motivos.map((m) => [m.id, m])), [datos.motivos]);
   const turnos = useMemo(() => new Map(datos.turnos.map((t) => [t.id, t])), [datos.turnos]);
 
-  const visibles = useMemo(() => datos.moviles.filter((m) => raiz === "G" || arbol.dentro(m.unidad, raiz)), [datos.moviles, raiz, arbol]);
-  const filas = useMemo(
-    () => visibles.map((m) => ({ m, estado: estadoMovil(m, ahora, abiertos, fuera, reservas), dir: arbol.direccion(m.unidad) })),
-    [visibles, ahora, abiertos, fuera, reservas, arbol],
-  );
+  // Un móvil prestado lo usa (y lo agenda) la unidad que lo recibe; su dueña lo ve como «Prestado»
+  const prestamos = useMemo(() => new Map(datos.prestamos.map((p) => [p.movil, p])), [datos.prestamos]);
+  const usa = (m: Movil) => prestamos.get(m.id)?.destino ?? m.unidad;
+  const visibles = datos.moviles.filter((m) => raiz === "G" || arbol.dentro(usa(m), raiz) || arbol.dentro(m.unidad, raiz));
+  const filas = visibles.map((m) => {
+    const u = usa(m);
+    const ajeno = raiz !== "G" && !arbol.dentro(u, raiz);
+    return { m, u, estado: (ajeno ? "prestado" : estadoMovil(m, ahora, abiertos, fuera, reservas)) as Estado, dir: arbol.direccion(u) };
+  });
 
   const conteo = (lista: typeof filas) => {
     const c = Object.fromEntries(Object.keys(ESTADOS).map((k) => [k, 0])) as Record<Estado, number>;
@@ -61,21 +67,21 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
   const cuenta = conteo(enDir);
   const reclamados = enDir.filter((f) => f.estado === "pendiente" && minutosVencido(abiertos.get(f.m.id)!, ahora) >= TOLERANCIA_RELEVO_MIN);
   const direcciones = [...new Set(filas.map((f) => f.dir))].sort();
-  const divisiones = [...new Set(enDir.map((f) => f.m.unidad))].sort((a, b) => arbol.corto(a).localeCompare(arbol.corto(b), "es", { numeric: true }));
+  const divisiones = [...new Set(enDir.map((f) => f.u))].sort((a, b) => arbol.corto(a).localeCompare(arbol.corto(b), "es", { numeric: true }));
 
   const lista = enDir
     .filter((f) => !filtroEstado.length || filtroEstado.includes(f.estado))
-    .filter((f) => !filtroDiv.length || filtroDiv.includes(f.m.unidad))
+    .filter((f) => !filtroDiv.length || filtroDiv.includes(f.u))
     .filter((f) => {
       if (!busqueda.trim()) return true;
       const s = abiertos.get(f.m.id);
       const gente = s?.dotacion.map((d) => { const p = personas.get(d.dni); return p ? nombrePersona(p) + " " + p.dni : d.dni; }).join(" ") ?? "";
-      return coincide(`${f.m.interno ?? ""} ${f.m.dominio} ${f.m.marca ?? ""} ${f.m.modelo ?? ""} ${s?.designacion ?? ""} ${gente} ${arbol.corto(f.m.unidad)}`, busqueda);
+      return coincide(`${f.m.interno ?? ""} ${f.m.dominio} ${f.m.marca ?? ""} ${f.m.modelo ?? ""} ${s?.designacion ?? ""} ${gente} ${arbol.corto(f.u)}`, busqueda);
     })
     .sort((a, b) => ESTADOS[a.estado].orden - ESTADOS[b.estado].orden || (a.m.interno ?? 1e9) - (b.m.interno ?? 1e9));
 
   const grupos = new Map<string, typeof lista>();
-  for (const f of lista) grupos.set(f.m.unidad, [...(grupos.get(f.m.unidad) ?? []), f]);
+  for (const f of lista) grupos.set(f.u, [...(grupos.get(f.u) ?? []), f]);
   const ordenGrupos = [...grupos.keys()].sort((a, b) => arbol.corto(a).localeCompare(arbol.corto(b), "es", { numeric: true }));
 
   const alternar = <T,>(lista: T[], set: (v: T[]) => void, v: T) => set(lista.includes(v) ? lista.filter((x) => x !== v) : [...lista, v]);
@@ -190,6 +196,7 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
                       {ESTADOS[estado].texto}{vencido ? ` · hace ${vencido >= 60 ? Math.floor(vencido / 60) + " h " : ""}${vencido % 60} min` : ""}
                     </span>
                     {m.revisar && <span className="etiqueta atento" title={m.revisar}>Dato a corregir</span>}
+                    {prestamos.get(m.id) && <span className="etiqueta info">{arbol.dentro(prestamos.get(m.id)!.destino, raiz) || raiz === "G" ? `Recibido de ${arbol.corto(prestamos.get(m.id)!.origen)}` : `Prestado a ${arbol.corto(prestamos.get(m.id)!.destino)}`}</span>}
                     <span className="text-sm grow">
                       {s && <>
                         {s.designacion && <b className="mr-2">{s.designacion}</b>}
@@ -220,7 +227,8 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
           datos={datos}
           guardia={guardia}
           arbol={arbol}
-          edita={edita && (raiz === "G" || arbol.dentro(movilAbierto.unidad, raiz))}
+          edita={edita && (raiz === "G" || arbol.dentro(usa(movilAbierto), raiz))}
+          prestamo={prestamos.get(movilAbierto.id)}
           abiertos={abiertos}
           ahora={ahora}
           onCerrar={(msg) => { setAbierto(null); if (msg) setAviso(msg); }}

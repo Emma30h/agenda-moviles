@@ -47,6 +47,14 @@ export const quitarSituacion = async (id: number) => llamar("quitar_situacion", 
 
 export const deshacer = async (id: number) => llamar("deshacer", { p_cambio: id }, "Cambio deshecho.");
 
+// ---------- préstamos
+export const prestarMovil = async (id: string, destino: string, conDotacion: boolean, obs: string) =>
+  llamar("prestar_movil", { p_movil: id, p_destino: destino, p_con_dotacion: conDotacion, p_obs: obs }, "Móvil prestado: ahora lo agenda la unidad que lo recibe.");
+export const devolverMovil = async (id: string) => llamar("devolver_movil", { p_movil: id }, "Móvil devuelto a su unidad.");
+export const prestarPersona = async (dni: string, destino: string, fecha: string, turno: string, obs: string) =>
+  llamar("prestar_persona", { p_dni: dni, p_destino: destino, p_fecha: fecha, p_turno: turno, p_obs: obs }, "Préstamo cargado para esa guardia.");
+export const quitarPrestamoPersona = async (id: number) => llamar("quitar_prestamo_persona", { p_id: id }, "Préstamo anulado.");
+
 /** Historial de un móvil o una persona: ediciones (con quién) y operaciones de la agenda. */
 export async function historialDe(tabla: "movil" | "personal", registro: string) {
   await exigirActivo();

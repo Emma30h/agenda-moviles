@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   coincide, crearArbol, diaHora, ESTADOS, fechaCorta, guardiaSiguiente, hora, minutosVencido, MOTIVOS_RESERVA, motivoNoApto,
   nombrePersona, rangoTurno, ROLES_DOTACION, textoMovil, TOLERANCIA_RELEVO_MIN,
-  type Estado, type FueraServicio, type Movil, type Reserva, type Servicio,
+  type Estado, type FueraServicio, type Movil, type Prestamo, type Reserva, type Servicio,
 } from "@/lib/agenda";
 import * as acc from "./acciones";
 import type { Datos } from "./tablero";
@@ -12,7 +12,7 @@ import type { Datos } from "./tablero";
 type Arbol = ReturnType<typeof crearArbol>;
 type Fila = { dni: string; rol: "jefe" | "chofer" | "acompanante" };
 type Props = {
-  movil: Movil; estado: Estado; servicio?: Servicio; fuera?: FueraServicio; reserva?: Reserva;
+  movil: Movil; estado: Estado; servicio?: Servicio; fuera?: FueraServicio; reserva?: Reserva; prestamo?: Prestamo;
   datos: Datos; guardia: { fecha: string; turno: string }; arbol: Arbol; edita: boolean;
   abiertos: Map<string, Servicio>; ahora: number; onCerrar: (mensaje?: string) => void;
 };
@@ -87,6 +87,7 @@ export function Gestion(p: Props) {
           </ul>
         </div>
       )}
+      {p.prestamo && <div className="paso">Prestado de <b>{p.arbol.porId.get(p.prestamo.origen)?.nombre}</b> a <b>{p.arbol.porId.get(p.prestamo.destino)?.nombre}</b> desde {diaHora(p.prestamo.desde)}{p.prestamo.con_dotacion ? " · con dotación" : ""}{p.prestamo.obs ? ` · ${p.prestamo.obs}` : ""}. Lo agenda la unidad que lo recibe; se devuelve desde Móviles.</div>}
       {p.fuera && <div className="paso">Fuera de servicio por <b>{motivos.find((x) => x.id === p.fuera!.motivo)?.nombre}</b> desde {diaHora(p.fuera.desde)}{p.fuera.obs ? ` · ${p.fuera.obs}` : ""}</div>}
       {p.reserva && !s && <div className="paso">Reservado en el {turnoNombre(p.reserva.turno)} del {fechaCorta(p.reserva.fecha)}: {p.reserva.motivo}{p.reserva.obs ? ` · ${p.reserva.obs}` : ""}. No cuenta como sin agendar.</div>}
 
@@ -219,7 +220,7 @@ function FormServicio(p: Props & {
   const designacion = `${desNombre.trim().toUpperCase()} ${desNumero.trim()}`.trim();
   const enUso = designacion && [...p.abiertos.values()].find((x) => x.designacion === designacion && x.movil !== p.movil.id);
   const conocida = !desNombre.trim() || p.datos.designaciones.some((d) => d.nombre === desNombre.trim().toUpperCase() || d.alias.includes(desNombre.trim().toUpperCase()));
-  const dirMovil = p.arbol.direccion(p.movil.unidad);
+  const dirMovil = p.arbol.direccion(p.prestamo?.destino ?? p.movil.unidad);
 
   return (
     <form className="grid gap-3" onSubmit={(e) => {
@@ -259,14 +260,14 @@ function FormServicio(p: Props & {
       {enUso && <div className="aviso atento">{designacion} ya está en uso por {textoMovil(p.datos.moviles.find((x) => x.id === enUso.movil)!)}. Revisá el número.</div>}
       {!conocida && <div className="aviso atento">«{desNombre.trim().toUpperCase()}» no está en el catálogo del SAE. Se puede usar igual; revisá que esté bien escrita.</div>}
 
-      <Dotacion {...p} relevando={p.relevando} fecha={fecha} filas={dotacion} setFilas={(f) => { setDotacion(f); setFaltan(null); }} dirMovil={dirMovil} />
+      <Dotacion {...p} relevando={p.relevando} fecha={fecha} turno={turno} filas={dotacion} setFilas={(f) => { setDotacion(f); setFaltan(null); }} dirMovil={dirMovil} />
       {faltan && <div className="aviso mal">{faltan}</div>}
       <Botones pendiente={p.pendiente} volver={p.volver} texto={p.relevando ? "Registrar relevo" : "Agendar"} />
     </form>
   );
 }
 
-function Dotacion(p: Props & { fecha: string; filas: Fila[]; setFilas: (f: Fila[]) => void; dirMovil: string; relevando?: Servicio }) {
+function Dotacion(p: Props & { fecha: string; turno: string; filas: Fila[]; setFilas: (f: Fila[]) => void; dirMovil: string; relevando?: Servicio }) {
   const [q, setQ] = useState("");
   // Quién está hoy en algún móvil (el que se releva no cuenta: sale en este mismo paso)
   const ocupados = useMemo(() => {
@@ -320,7 +321,9 @@ function Dotacion(p: Props & { fecha: string; filas: Fila[]; setFilas: (f: Fila[
           {resultados.map((x) => {
             const noApto = motivoNoApto(x, p.fecha, p.datos.situaciones);
             const enOtro = ocupados.get(x.dni);
-            const motivo = noApto ?? (enOtro ? `Ya está en ${enOtro}` : null);
+            const pp = p.datos.prestamosPersonal.find((q) => q.dni === x.dni && q.fecha === p.fecha && q.turno === p.turno);
+            const prestadoAfuera = pp && p.arbol.direccion(pp.destino) !== p.dirMovil ? `Prestado a ${p.arbol.corto(pp.destino)} en esa guardia` : null;
+            const motivo = noApto ?? (enOtro ? `Ya está en ${enOtro}` : prestadoAfuera);
             return (
               <li key={x.dni}>
                 <button type="button" disabled={!!motivo} onClick={() => agregar(x.dni)} className="w-full text-left px-3 py-2 disabled:opacity-60 disabled:cursor-not-allowed hover:bg-[var(--panel-2)]">

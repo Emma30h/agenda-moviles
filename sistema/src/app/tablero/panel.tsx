@@ -19,7 +19,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
 }) {
   const arbol = useMemo(() => crearArbol(datos.unidades), [datos.unidades]);
   const ahora = useAhora();
-  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo"], "tablero");
+  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal"], "tablero");
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pendiente, iniciar] = useTransition();
   const correr = (fn: () => Promise<{ ok?: string; error?: string }>) =>
@@ -31,11 +31,15 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
   const motivos = useMemo(() => new Map(datos.motivos.map((m) => [m.id, m])), [datos.motivos]);
   const turno = datos.turnos.find((t) => t.id === guardia.turno);
 
+  // Cada móvil cuenta para la unidad que lo usa (si está prestado, la que lo recibió)
+  const prestamos = new Map(datos.prestamos.map((p) => [p.movil, p]));
+  const usa = (m: Movil) => prestamos.get(m.id)?.destino ?? m.unidad;
   const filas = datos.moviles
-    .filter((m) => raiz === "G" || arbol.dentro(m.unidad, raiz))
-    .map((m) => ({ m, e: estadoMovil(m, ahora, abiertos, fuera, reservas), dir: arbol.direccion(m.unidad) }));
+    .filter((m) => raiz === "G" || arbol.dentro(usa(m), raiz))
+    .map((m) => ({ m, e: estadoMovil(m, ahora, abiertos, fuera, reservas), dir: arbol.direccion(usa(m)) }));
+  const prestPers = datos.prestamosPersonal.filter((q) => q.fecha === guardia.fecha && q.turno === guardia.turno);
+  const prestadaA = new Map(prestPers.map((q) => [q.dni, q]));
   const enDotacion = new Set(datos.servicios.flatMap((s) => s.dotacion.map((d) => d.dni)));
-  const personas = datos.personal.filter((p) => raiz === "G" || arbol.dentro(p.unidad, raiz));
   const direcciones = [...new Set(filas.map((f) => f.dir))].sort((a, b) => (["N", "S", "M"].indexOf(a) + 9) % 9 - (["N", "S", "M"].indexOf(b) + 9) % 9);
 
   const contar = (l: typeof filas) => {
@@ -136,13 +140,18 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
         {direcciones.map((d) => {
           const l = filas.filter((f) => f.dir === d), c = contar(l);
           const inc = incompletos.filter((f) => f.dir === d).length;
-          const pers = personas.filter((p) => arbol.direccion(p.unidad) === d);
+          // Personal de la Dirección en esta guardia: sin los prestados a otra, más los recibidos
+          const pers = datos.personal.filter((p) => { const q = prestadaA.get(p.dni); return arbol.direccion(q ? q.destino : p.unidad) === d; });
+          const propios = datos.moviles.filter((m) => arbol.direccion(m.unidad) === d);
+          const salen = propios.filter((m) => prestamos.has(m.id) && arbol.direccion(usa(m)) !== d).length;
+          const entran = l.filter((f) => arbol.direccion(f.m.unidad) !== d).length;
           const enMovil = pers.filter((p) => enDotacion.has(p.dni)).length;
           const libres = pers.filter((p) => !enDotacion.has(p.dni) && !motivoNoApto(p, guardia.fecha, datos.situaciones)).length;
           const ya = datos.reclamos.some((r) => !r.resuelto_en && !r.movil && r.direccion === d && r.fecha === guardia.fecha && r.turno === guardia.turno);
           return (
             <article key={d} className="tarjeta p-4 grid gap-3">
-              <h3 className="font-semibold">Dirección {NOMBRE_DIRECCION[d] ?? d} <span className="text-tenue font-normal text-sm">· {l.length} móviles</span></h3>
+              <h3 className="font-semibold">{d === "G" ? "Dirección General (sin Dirección asignada)" : d === "SUB" ? "Subdirección General" : `Dirección ${NOMBRE_DIRECCION[d] ?? d}`} <span className="text-tenue font-normal text-sm">· {l.length} móviles</span></h3>
+              {(salen > 0 || entran > 0) && <p className="text-[12.5px] text-tenue -mt-2">Propios {propios.length}{salen ? ` · prestados a otra −${salen}` : ""}{entran ? ` · recibidos +${entran}` : ""}</p>}
               <div className={`text-4xl font-bold ${c.sin_agendar ? "text-[var(--bad)]" : "text-[var(--ok)]"}`}>{c.sin_agendar}<span className="text-sm font-normal text-tenue ml-2">sin agendar</span></div>
               <div className="flex flex-wrap gap-1.5">
                 {COLUMNAS.filter((k) => k !== "sin_agendar" && c[k]).map((k) => <span key={k} className={`etiqueta ${ESTADOS[k].clase}`}>{ESTADOS[k].texto} {c[k]}</span>)}
@@ -180,6 +189,30 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
           </tbody>
         </table>
       </section>
+
+      {(datos.prestamos.length > 0 || prestPers.length > 0) && (
+        <section className="tarjeta overflow-x-auto">
+          <h2 className="font-semibold px-4 pt-4">Préstamos activos</h2>
+          {datos.prestamos.filter((p) => raiz === "G" || arbol.dentro(p.origen, raiz) || arbol.dentro(p.destino, raiz)).length > 0 && (
+            <table className="tabla mt-2">
+              <thead><tr><th>Móvil</th><th>De</th><th>A</th><th>Desde</th><th>Con dotación</th></tr></thead>
+              <tbody>{datos.prestamos.filter((p) => raiz === "G" || arbol.dentro(p.origen, raiz) || arbol.dentro(p.destino, raiz)).map((p) => {
+                const m = datos.moviles.find((x) => x.id === p.movil);
+                return <tr key={p.id}><td><b>{m ? textoMovil(m) : "—"}</b></td><td>{arbol.corto(p.origen)} ({NOMBRE_DIRECCION[arbol.direccion(p.origen)]})</td><td>{arbol.corto(p.destino)} ({NOMBRE_DIRECCION[arbol.direccion(p.destino)]})</td><td className="text-sm">{diaHora(p.desde)}</td><td>{p.con_dotacion ? "Sí" : "No"}</td></tr>;
+              })}</tbody>
+            </table>
+          )}
+          {prestPers.length > 0 && (
+            <table className="tabla mt-2">
+              <thead><tr><th>Personal prestado en esta guardia</th><th>De</th><th>A</th></tr></thead>
+              <tbody>{prestPers.filter((q) => raiz === "G" || arbol.dentro(q.origen, raiz) || arbol.dentro(q.destino, raiz)).map((q) => {
+                const p = datos.personal.find((x) => x.dni === q.dni);
+                return <tr key={q.id}><td>{p ? `${p.jerarquia ?? ""} ${p.apellido}, ${p.nombre}`.trim() : q.dni}</td><td>{arbol.corto(q.origen)}</td><td>{arbol.corto(q.destino)}</td></tr>;
+              })}</tbody>
+            </table>
+          )}
+        </section>
+      )}
 
       {/* Lo que falta y por qué */}
       <section className="tarjeta overflow-x-auto">

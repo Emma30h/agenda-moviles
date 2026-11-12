@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Dialogo } from "@/components/dialogo";
 import {
   casiIgual, coincide, compacto, crearArbol, diaHora, fechaCorta, hoyCordoba, motivoNoApto, MOTIVOS_BAJA_PERSONA, nombrePersona,
-  TIPOS_SITUACION, type Persona, type Unidad,
+  TIPOS_SITUACION, type Persona, type PrestamoPersona, type Turno, type Unidad, guardiaActual,
 } from "@/lib/agenda";
 import { jerarquiasDe, llevaJerarquia, TIPOS_PERSONAL, type TipoPersonal } from "@/lib/reglas";
 import {
-  bajaPersona, cargarSituacion, guardarPersona, notasDe, quitarSituacion, reincorporarPersona, terminarSituacion, type DatosPersona,
+  bajaPersona, cargarSituacion, guardarPersona, notasDe, prestarPersona, quitarPrestamoPersona, quitarSituacion, reincorporarPersona, terminarSituacion, type DatosPersona,
 } from "../datos/acciones";
 import { Campo, Chips, FiltroMultiple, SelectorUnidad } from "../datos/campos";
 import { Historial } from "../datos/historial";
@@ -22,8 +22,9 @@ export type SituacionFicha = { id: number; dni: string; tipo: string; detalle: s
 type Arbol = ReturnType<typeof crearArbol>;
 type Aptitud = "apto" | "no_apto" | "en_movil" | "baja";
 
-export function VistaPersonal({ unidades, personal, situaciones, enMovil, raiz, raizEdita }: {
+export function VistaPersonal({ unidades, personal, situaciones, enMovil, raiz, raizEdita, prestamos, turnos, esGeneral }: {
   unidades: Unidad[]; personal: FichaPersona[]; situaciones: SituacionFicha[]; enMovil: Record<string, string>; raiz: string; raizEdita: string | null;
+  prestamos: PrestamoPersona[]; turnos: Turno[]; esGeneral: boolean;
 }) {
   const arbol = useMemo(() => crearArbol(unidades), [unidades]);
   const hoy = hoyCordoba();
@@ -119,6 +120,7 @@ export function VistaPersonal({ unidades, personal, situaciones, enMovil, raiz, 
         <Ficha key={elegida.dni} p={elegida} arbol={arbol} unidades={unidades} personal={personal} raizEdita={raizEdita}
           editable={puedeEditar(elegida.unidad)} situaciones={situaciones.filter((s) => s.dni === elegida.dni)}
           enMovil={enMovil[elegida.dni]} motivo={motivoNoApto(elegida, hoy, situaciones)}
+          prestamos={prestamos.filter((q) => q.dni === elegida.dni)} turnos={turnos} esGeneral={esGeneral}
           onCerrar={() => setAbierto(null)} onAviso={setAviso} />
       )}
     </div>
@@ -128,11 +130,12 @@ export function VistaPersonal({ unidades, personal, situaciones, enMovil, raiz, 
 const estadoSit = (s: SituacionFicha, hoy: string) => (s.desde > hoy ? "prox" : s.hasta && s.hasta < hoy ? "fin" : "vig");
 const SITB = { vig: ["mal", "Vigente"], prox: ["info", "Próxima"], fin: ["", "Terminada"] } as const;
 
-function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones, enMovil, motivo, onCerrar, onAviso }: {
+function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones, enMovil, motivo, prestamos, turnos, esGeneral, onCerrar, onAviso }: {
   p: FichaPersona; arbol: Arbol; unidades: Unidad[]; personal: FichaPersona[]; raizEdita: string | null; editable: boolean;
-  situaciones: SituacionFicha[]; enMovil?: string; motivo: string | null; onCerrar: () => void; onAviso: (s: string) => void;
+  situaciones: SituacionFicha[]; enMovil?: string; motivo: string | null; prestamos: PrestamoPersona[]; turnos: Turno[]; esGeneral: boolean;
+  onCerrar: () => void; onAviso: (s: string) => void;
 }) {
-  const [modo, setModo] = useState<"ver" | "editar" | "baja" | "situacion">("ver");
+  const [modo, setModo] = useState<"ver" | "editar" | "baja" | "situacion" | "prestar">("ver");
   const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [notas, setNotas] = useState<Record<number, string>>({});
@@ -187,10 +190,23 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
         </ul>
       </div>
 
+      {prestamos.length > 0 && (
+        <div className="mt-4">
+          <h3 className="font-semibold text-sm">Préstamos</h3>
+          <ul className="grid gap-2 mt-2">{prestamos.map((q) => (
+            <li key={q.id} className="paso m-0 flex flex-wrap gap-2 items-center justify-between">
+              <span>A <b>{arbol.porId.get(q.destino)?.nombre}</b> · {turnos.find((t) => t.id === q.turno)?.nombre} del {fechaCorta(q.fecha)}{q.obs ? ` · ${q.obs}` : ""}</span>
+              {editable && <button className="boton" disabled={pendiente} onClick={() => correr(() => quitarPrestamoPersona(q.id))}>Anular</button>}
+            </li>
+          ))}</ul>
+        </div>
+      )}
+
       {editable && modo === "ver" && (
         <div className="flex flex-wrap gap-2 mt-4">
           {p.activo && <button className="boton primario" onClick={() => setModo("situacion")}>Cargar licencia, TNO o suspensión</button>}
           {p.activo && <button className="boton" onClick={() => setModo("editar")}>Editar datos o cargar un pase</button>}
+          {p.activo && <button className="boton" onClick={() => setModo("prestar")}>Prestar para una guardia</button>}
           {p.activo && <button className="boton peligro" onClick={() => setModo("baja")}>Dar de baja</button>}
           {!p.activo && <button className="boton primario" disabled={pendiente} onClick={() => correr(() => reincorporarPersona(p.dni))}>Reincorporar</button>}
         </div>
@@ -198,6 +214,11 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
       {modo === "situacion" && (
         <FormSituacion dni={p.dni} enMovil={enMovil} pendiente={pendiente} onVolver={() => setModo("ver")}
           onEnviar={(t, d, h, o) => correr(() => cargarSituacion(p.dni, t, d, h, o))} />
+      )}
+      {modo === "prestar" && (
+        <FormPrestarPersona arbol={arbol} unidades={unidades} turnos={turnos} raiz={esGeneral ? "G" : arbol.direccion(p.unidad)} origen={p.unidad}
+          pendiente={pendiente} onVolver={() => setModo("ver")}
+          onEnviar={(d, f, t, o) => correr(() => prestarPersona(p.dni, d, f, t, o))} />
       )}
       {modo === "editar" && raizEdita && (
         <div className="mt-4"><FormPersona p={p} arbol={arbol} unidades={unidades} raizEdita={raizEdita} personal={personal} onListo={listo} onVolver={() => setModo("ver")} /></div>
@@ -309,6 +330,34 @@ function FormPersona({ p, arbol, unidades, raizEdita, personal, onListo, onVolve
       <div className="flex gap-2 justify-end">
         {onVolver && <button type="button" className="boton" onClick={onVolver}>Volver</button>}
         <button type="submit" className="boton primario" disabled={pendiente || !!ya}>{pendiente ? "Guardando…" : p ? "Guardar cambios" : "Dar de alta"}</button>
+      </div>
+    </form>
+  );
+}
+
+function FormPrestarPersona({ arbol, unidades, turnos, raiz, origen, pendiente, onEnviar, onVolver }: {
+  arbol: Arbol; unidades: Unidad[]; turnos: Turno[]; raiz: string; origen: string; pendiente: boolean;
+  onEnviar: (destino: string, fecha: string, turno: string, obs: string) => void; onVolver: () => void;
+}) {
+  const g = guardiaActual();
+  const [destino, setDestino] = useState("");
+  const [fecha, setFecha] = useState(g.fecha);
+  const [turno, setTurno] = useState(g.turno);
+  const [obs, setObs] = useState("");
+  return (
+    <form className="grid gap-3 mt-4" onSubmit={(e) => { e.preventDefault(); if (destino && destino !== origen) onEnviar(destino, fecha, turno, obs); }}>
+      <p className="text-sm text-tenue">En esa guardia solo se la puede agendar en la Dirección que la recibe.</p>
+      <Campo texto="Unidad que la recibe" ayuda={raiz === "G" ? undefined : "Dentro de tu Dirección. Hacia otra Dirección lo presta el General."} error={destino === origen ? "Es la misma unidad." : null}>
+        <SelectorUnidad arbol={arbol} unidades={unidades} raiz={raiz} valor={destino} onChange={setDestino} />
+      </Campo>
+      <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
+        <Campo texto="Fecha de la guardia"><input className="entrada" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required /></Campo>
+        <Campo texto="Turno"><select className="entrada" value={turno} onChange={(e) => setTurno(e.target.value)}>{turnos.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}</select></Campo>
+      </div>
+      <Campo texto="Observación (opcional)"><input className="entrada" value={obs} onChange={(e) => setObs(e.target.value)} maxLength={200} /></Campo>
+      <div className="flex gap-2 justify-end">
+        <button type="button" className="boton" onClick={onVolver}>Volver</button>
+        <button type="submit" className="boton primario" disabled={pendiente || !destino || destino === origen}>{pendiente ? "Guardando…" : "Prestar"}</button>
       </div>
     </form>
   );

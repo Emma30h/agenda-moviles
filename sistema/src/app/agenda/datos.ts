@@ -2,7 +2,7 @@ import "server-only";
 import { clienteSesion } from "@/lib/supabase/servidor";
 import {
   guardiaActual, type Designacion, type FueraServicio, type Motivo, type Movil, type Persona, type Reclamo, type Reserva,
-  type Servicio, type Situacion, type Turno, type Unidad,
+  type Servicio, type Situacion, type Turno, type Unidad, type Prestamo, type PrestamoPersona,
 } from "@/lib/agenda";
 import { todo } from "../datos/comun";
 
@@ -14,7 +14,7 @@ export async function cargarOperacion() {
   await db.rpc("revisar_reclamos");
   const hace24 = new Date(Date.now() - 864e5).toISOString();
 
-  const [unidades, turnos, motivos, moviles, personal, situaciones, servicios, fuera, reservas, designaciones, reclamos] = await Promise.all([
+  const [unidades, turnos, motivos, moviles, personal, situaciones, servicios, fuera, reservas, designaciones, reclamos, prestamos, prestamosPersonal] = await Promise.all([
     todo<Unidad>((a, b) => db.from("unidad").select("id,nombre,tipo,padre,orden").order("orden").range(a, b)),
     todo<Turno>((a, b) => db.from("turno").select("id,nombre,hora_inicio,hora_fin,unidad,orden").eq("activo", true).order("orden").range(a, b)),
     todo<Motivo>((a, b) => db.from("motivo").select("id,nombre,categoria,gravedad").order("orden").range(a, b)),
@@ -27,8 +27,10 @@ export async function cargarOperacion() {
     todo<Reserva>((a, b) => db.from("reserva").select("id,movil,fecha,turno,motivo,obs,creado_en").eq("anulada", false).gte("fecha", actual.fecha).range(a, b)),
     todo<Designacion>((a, b) => db.from("designacion").select("nombre,zona,unidad,alias").eq("activa", true).order("nombre").range(a, b)),
     todo<Reclamo>((a, b) => db.from("reclamo").select("id,direccion,movil,fecha,turno,total,texto,creado_en,resuelto_en,automatico").or(`resuelto_en.is.null,resuelto_en.gte.${hace24}`).order("id", { ascending: false }).range(a, b)),
+    todo<Prestamo>((a, b) => db.from("prestamo").select("id,movil,origen,destino,con_dotacion,obs,desde").is("hasta", null).range(a, b)),
+    todo<PrestamoPersona>((a, b) => db.from("prestamo_personal").select("id,dni,origen,destino,fecha,turno,obs").eq("anulado", false).gte("fecha", actual.fecha).range(a, b)),
   ]);
 
   const abiertos = servicios.map((s) => ({ ...s, dotacion: s.dotacion.filter((d) => !d.hasta).map(({ dni, rol, desde }) => ({ dni, rol, desde })) }));
-  return { unidades, turnos, motivos, moviles, personal, situaciones, servicios: abiertos, fuera, reservas, designaciones, reclamos };
+  return { unidades, turnos, motivos, moviles, personal, situaciones, servicios: abiertos, fuera, reservas, designaciones, reclamos, prestamos, prestamosPersonal };
 }

@@ -28,7 +28,7 @@ export const MOTIVOS_RESERVA = ["Sin novedad", "Falta de personal", "Rotación d
 /** Minutos de tolerancia antes del reclamo automático (decidido 2026-11-12). */
 export const TOLERANCIA_RELEVO_MIN = 30;
 
-export type Estado = "fuera" | "pendiente" | "ocupado" | "programado" | "servicio" | "reservado" | "sin_agendar";
+export type Estado = "fuera" | "pendiente" | "ocupado" | "programado" | "servicio" | "reservado" | "sin_agendar" | "prestado";
 export const ESTADOS: Record<Estado, { texto: string; clase: string; orden: number }> = {
   pendiente: { texto: "Pendiente de relevo", clase: "atento", orden: 1 },
   sin_agendar: { texto: "Sin agendar", clase: "", orden: 2 },
@@ -37,6 +37,7 @@ export const ESTADOS: Record<Estado, { texto: string; clase: string; orden: numb
   programado: { texto: "Agendado (empieza más tarde)", clase: "info", orden: 5 },
   reservado: { texto: "Reservado", clase: "reservado", orden: 6 },
   fuera: { texto: "Fuera de servicio", clase: "mal", orden: 7 },
+  prestado: { texto: "Prestado a otra unidad", clase: "", orden: 8 },
 };
 
 export function estadoMovil(
@@ -152,3 +153,6 @@ export const hace = (iso: string, ahora = Date.now()) => {
   const m = Math.max(0, Math.round((ahora - Date.parse(iso)) / 60000));
   return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
 };
+
+export type Prestamo = { id: number; movil: string; origen: string; destino: string; con_dotacion: boolean; obs: string | null; desde: string };
+export type PrestamoPersona = { id: number; dni: string; origen: string; destino: string; fecha: string; turno: string; obs: string | null };

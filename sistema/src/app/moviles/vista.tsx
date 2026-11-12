@@ -5,9 +5,9 @@ import { useMemo, useState, useTransition } from "react";
 import { Dialogo } from "@/components/dialogo";
 import {
   casiIgual, coincide, compacto, crearArbol, diaHora, MOTIVOS_BAJA_MOVIL, PROGRAMAS, textoMovil, VEHICULOS,
-  type Movil, type Unidad,
+  type Movil, type Prestamo, type Unidad,
 } from "@/lib/agenda";
-import { bajaMovil, guardarMovil, reincorporarMovil, type DatosMovil } from "../datos/acciones";
+import { bajaMovil, devolverMovil, guardarMovil, prestarMovil, reincorporarMovil, type DatosMovil } from "../datos/acciones";
 import { Campo, Chips, FiltroMultiple, SelectorUnidad } from "../datos/campos";
 import { Historial } from "../datos/historial";
 
@@ -15,9 +15,11 @@ export type MovilFicha = Movil & { activo: boolean; baja_motivo: string | null; 
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
 type Arbol = ReturnType<typeof crearArbol>;
 
-export function VistaMoviles({ unidades, moviles, raiz, raizEdita, enServicio, fuera }: {
+export function VistaMoviles({ unidades, moviles, raiz, raizEdita, enServicio, fuera, prestamos, esGeneral }: {
   unidades: Unidad[]; moviles: MovilFicha[]; raiz: string; raizEdita: string | null; enServicio: Record<string, string>; fuera: string[];
+  prestamos: Prestamo[]; esGeneral: boolean;
 }) {
+  const prestamo = (id: string) => prestamos.find((p) => p.movil === id);
   const arbol = useMemo(() => crearArbol(unidades), [unidades]);
   const [fEstado, setFEstado] = useState<("activo" | "baja" | "revisar")[]>(["activo"]);
   const [fProg, setFProg] = useState<("ojos_en_alerta" | "policial")[]>([]);
@@ -27,7 +29,7 @@ export function VistaMoviles({ unidades, moviles, raiz, raizEdita, enServicio, f
   const [aviso, setAviso] = useState<string | null>(null);
 
   const puedeEditar = (u: string) => !!raizEdita && (raizEdita === "G" || arbol.dentro(u, raizEdita));
-  const visibles = moviles.filter((m) => raiz === "G" || arbol.dentro(m.unidad, raiz));
+  const visibles = moviles.filter((m) => raiz === "G" || arbol.dentro(m.unidad, raiz) || (!!prestamo(m.id) && arbol.dentro(prestamo(m.id)!.destino, raiz)));
   const cuenta = (f: (m: MovilFicha) => boolean) => visibles.filter(f).length;
   const lista = visibles
     .filter((m) => !fEstado.length || (fEstado.includes("activo") && m.activo) || (fEstado.includes("baja") && !m.activo) || (fEstado.includes("revisar") && !!m.revisar))
@@ -87,6 +89,7 @@ export function VistaMoviles({ unidades, moviles, raiz, raizEdita, enServicio, f
                     : fuera.includes(m.id) ? <span className="etiqueta mal">Fuera de servicio</span>
                     : <span className="etiqueta">Disponible</span>}
                   {m.revisar && <span className="etiqueta atento" title={m.revisar}>Dato a corregir</span>}
+                  {prestamo(m.id) && <span className="etiqueta info">Prestado a {arbol.corto(prestamo(m.id)!.destino)}</span>}
                 </td>
               </tr>
             ))}
@@ -105,17 +108,19 @@ export function VistaMoviles({ unidades, moviles, raiz, raizEdita, enServicio, f
       {elegido && (
         <Ficha key={elegido.id} m={elegido} arbol={arbol} unidades={unidades} moviles={moviles} raizEdita={raizEdita}
           editable={puedeEditar(elegido.unidad)} enServicio={enServicio[elegido.id]} fuera={fuera.includes(elegido.id)}
+          prestamo={prestamo(elegido.id)} esGeneral={esGeneral}
+          puedeDevolver={!!prestamo(elegido.id) && (esGeneral || puedeEditar(prestamo(elegido.id)!.origen) || puedeEditar(prestamo(elegido.id)!.destino))}
           onCerrar={() => setAbierto(null)} onAviso={setAviso} />
       )}
     </div>
   );
 }
 
-function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, fuera, onCerrar, onAviso }: {
+function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, fuera, prestamo, puedeDevolver, esGeneral, onCerrar, onAviso }: {
   m: MovilFicha; arbol: Arbol; unidades: Unidad[]; moviles: MovilFicha[]; raizEdita: string | null; editable: boolean;
-  enServicio?: string; fuera: boolean; onCerrar: () => void; onAviso: (s: string) => void;
+  enServicio?: string; fuera: boolean; prestamo?: Prestamo; puedeDevolver: boolean; esGeneral: boolean; onCerrar: () => void; onAviso: (s: string) => void;
 }) {
-  const [modo, setModo] = useState<"ver" | "editar" | "baja">("ver");
+  const [modo, setModo] = useState<"ver" | "editar" | "baja" | "prestar">("ver");
   const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pendiente, iniciar] = useTransition();
@@ -127,12 +132,14 @@ function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, f
         {!m.activo ? <span className="etiqueta">Dado de baja</span> : enServicio ? <span className="etiqueta ok">En servicio · {enServicio}</span> : fuera ? <span className="etiqueta mal">Fuera de servicio</span> : <span className="etiqueta">Disponible</span>}
         {m.revisar && <span className="etiqueta atento">{m.revisar}</span>}
       </div>
+      {prestamo && <div className="paso">Prestado de <b>{arbol.porId.get(prestamo.origen)?.nombre}</b> a <b>{arbol.porId.get(prestamo.destino)?.nombre}</b> desde {diaHora(prestamo.desde)}{prestamo.con_dotacion ? " · con dotación" : ""}{prestamo.obs ? ` · ${prestamo.obs}` : ""}. Mientras tanto lo agenda la unidad que lo recibe.</div>}
       {!m.activo && <div className="paso">Baja: <b>{m.baja_motivo}</b>{m.baja_fecha ? ` · ${diaHora(m.baja_fecha)}` : ""}{m.baja_obs ? ` · ${m.baja_obs}` : ""}. No se borró: se puede reincorporar.</div>}
       {error && <div className="aviso mal mt-3">{error}</div>}
 
       {editable && modo === "ver" && (
         <div className="flex flex-wrap gap-2 mt-4">
           {m.activo && <button className="boton primario" onClick={() => setModo("editar")}>Editar datos o cambiar de división</button>}
+          {m.activo && !prestamo && <button className="boton" onClick={() => setModo("prestar")}>Prestar</button>}
           {m.activo && <button className="boton peligro" onClick={() => setModo("baja")}>Dar de baja</button>}
           {!m.activo && <button className="boton primario" disabled={pendiente} onClick={() => iniciar(async () => { setError(null); const r = await reincorporarMovil(m.id); if (r.error) setError(r.error); else listo(r.ok!); })}>Reincorporar</button>}
         </div>
@@ -145,6 +152,15 @@ function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, f
           onVolver={() => setModo("ver")}
           onEnviar={(motivo, obs) => iniciar(async () => { setError(null); const r = await bajaMovil(m.id, motivo, obs); if (r.error) setError(r.error); else listo(r.ok!); })}
           pendiente={pendiente} />
+      )}
+      {puedeDevolver && modo === "ver" && (
+        <div className="mt-3"><button className="boton primario" disabled={pendiente || !!enServicio} title={enServicio ? "Cerralo antes de devolverlo" : undefined}
+          onClick={() => iniciar(async () => { setError(null); const r = await devolverMovil(m.id); if (r.error) setError(r.error); else listo(r.ok!); })}>Devolver a {arbol.corto(prestamo!.origen)}</button></div>
+      )}
+      {modo === "prestar" && raizEdita && (
+        <FormPrestar arbol={arbol} unidades={unidades} raiz={esGeneral ? "G" : arbol.direccion(m.unidad)} origen={m.unidad} enServicio={!!enServicio} pendiente={pendiente}
+          onVolver={() => setModo("ver")}
+          onEnviar={(destino, conDot, obs) => iniciar(async () => { setError(null); const r = await prestarMovil(m.id, destino, conDot, obs); if (r.error) setError(r.error); else listo(r.ok!); })} />
       )}
       {!editable && <p className="text-sm text-tenue mt-4">Podés ver este móvil, pero no editarlo.</p>}
       <Historial tabla="movil" registro={m.id} puedeEditar={editable} nombreUnidad={(u) => arbol.corto(u)} version={version} onCambio={listo} />
@@ -236,6 +252,32 @@ function FormMovil({ m, arbol, unidades, raizEdita, moviles, enServicio, onListo
       <div className="flex gap-2 justify-end">
         {onVolver && <button type="button" className="boton" onClick={onVolver}>Volver</button>}
         <button type="submit" className="boton primario" disabled={pendiente || !!bloqueo}>{pendiente ? "Guardando…" : m ? "Guardar cambios" : "Dar de alta"}</button>
+      </div>
+    </form>
+  );
+}
+
+function FormPrestar({ arbol, unidades, raiz, origen, enServicio, pendiente, onEnviar, onVolver }: {
+  arbol: Arbol; unidades: Unidad[]; raiz: string; origen: string; enServicio: boolean; pendiente: boolean;
+  onEnviar: (destino: string, conDotacion: boolean, obs: string) => void; onVolver: () => void;
+}) {
+  const [destino, setDestino] = useState("");
+  const [conDot, setConDot] = useState(false);
+  const [obs, setObs] = useState("");
+  const otraDir = destino && arbol.direccion(destino) !== arbol.direccion(origen);
+  return (
+    <form className="grid gap-3 mt-4" onSubmit={(e) => { e.preventDefault(); if (destino && destino !== origen) onEnviar(destino, conDot, obs); }}>
+      {enServicio && <div className="aviso atento">Está en servicio: cerralo desde la Agenda antes de prestarlo.</div>}
+      <Campo texto="Unidad que lo recibe" ayuda={raiz === "G" ? "Podés prestarlo a cualquier unidad." : "Dentro de tu Dirección. Hacia otra Dirección lo presta el General."}
+        error={destino === origen ? "Es la misma unidad." : null}>
+        <SelectorUnidad arbol={arbol} unidades={unidades} raiz={raiz} valor={destino} onChange={setDestino} />
+      </Campo>
+      {otraDir && <div className="aviso atento">Va a otra Dirección: mientras dure el préstamo, cuenta y se agenda allá.</div>}
+      <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={conDot} onChange={(e) => setConDot(e.target.checked)} /> Va con su dotación</label>
+      <Campo texto="Observación (opcional)"><input className="entrada" value={obs} onChange={(e) => setObs(e.target.value)} maxLength={200} placeholder="Refuerzo por evento, falta de móviles…" /></Campo>
+      <div className="flex gap-2 justify-end">
+        <button type="button" className="boton" onClick={onVolver}>Volver</button>
+        <button type="submit" className="boton primario" disabled={pendiente || enServicio || !destino || destino === origen}>{pendiente ? "Guardando…" : "Prestar"}</button>
       </div>
     </form>
   );
