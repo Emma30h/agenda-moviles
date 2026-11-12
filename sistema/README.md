@@ -21,6 +21,16 @@ Hoy incluye: solicitud de cuenta con confirmación de correo, ingreso con correo
 
 > Hasta configurar Brevo, Supabase manda los correos con su servicio de prueba: unos pocos por hora y solo a correos del equipo del proyecto. Alcanza para probar con tu propio correo.
 
+## Cargar los datos reales (flota, nóminas y designaciones del SAE)
+
+1. Correr la migración `0003_moviles_personal.sql` en el SQL Editor.
+2. Con los Excel y el CSV del SAE en la carpeta `Recursos/` (fuera de git):
+   ```bash
+   python scripts/importar_datos.py ../Recursos            # muestra el resumen, no carga
+   python scripts/importar_datos.py ../Recursos --cargar   # carga en Supabase
+   ```
+   Se puede repetir: actualiza por dominio, DNI y nombre de designación. Solo guarda campos operativos (nada de domicilio, teléfono, armamento, chaleco ni diagnósticos).
+
 ## Crear el primer Super Admin
 
 1. Levantá el sitio y entrá a **Solicitar cuenta** con tus datos.
