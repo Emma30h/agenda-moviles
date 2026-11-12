@@ -72,3 +72,7 @@ export async function reservar(d: { movil: string; fecha: string; turno: string;
 export async function quitarReserva(d: { reserva: number }) {
   return llamar("quitar_reserva", { p_reserva: d.reserva }, "Reserva quitada.");
 }
+
+export async function cambiarDesignacion(d: { servicio: string; designacion: string }) {
+  return llamar("cambiar_designacion", { p_servicio: d.servicio, p_designacion: d.designacion }, "Designación cambiada. La anterior queda registrada.");
+}

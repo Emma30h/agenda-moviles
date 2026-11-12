@@ -16,7 +16,7 @@ type Props = {
   datos: Datos; guardia: { fecha: string; turno: string }; arbol: Arbol; edita: boolean;
   abiertos: Map<string, Servicio>; ahora: number; onCerrar: (mensaje?: string) => void;
 };
-type Accion = "agendar" | "relevar" | "cerrar" | "ocupado" | "fin" | "fuera" | "reservar" | null;
+type Accion = "agendar" | "relevar" | "cerrar" | "ocupado" | "fin" | "fuera" | "reservar" | "designacion" | null;
 
 /** Hora de Córdoba escrita en un campo datetime-local → ISO */
 const desdeLocal = (v: string) => (v ? new Date(v + ":00-03:00").toISOString() : "");
@@ -72,6 +72,7 @@ export function Gestion(p: Props) {
       {/* Detalle del estado */}
       {s && (
         <div className="paso">
+          {s.designaciones_previas.length > 0 && <div className="text-tenue">Antes: {s.designaciones_previas.join(" → ")}</div>}
           <div><b>{s.designacion ?? "Sin designación"}</b> · {turnoNombre(s.turno)} del {fechaCorta(s.fecha)} · {diaHora(s.inicio)} a {diaHora(s.fin_previsto)}</div>
           {estado === "pendiente" && (
             <div className={minutosVencido(s, p.ahora) >= TOLERANCIA_RELEVO_MIN ? "text-[var(--warn)]" : "text-tenue"}>
@@ -106,6 +107,7 @@ export function Gestion(p: Props) {
             <button className="boton" onClick={() => setAccion("cerrar")}>Cerrar servicio</button>
             {!s.ocupado_motivo && <button className="boton" onClick={() => setAccion("ocupado")}>Sigue ocupado</button>}
             <button className="boton" onClick={() => setAccion("fin")}>Cambiar horario</button>
+            <button className="boton" onClick={() => setAccion("designacion")}>Cambiar designación</button>
           </>}
           {estado !== "fuera" && <button className="boton peligro" onClick={() => setAccion("fuera")}>Fuera de servicio</button>}
           {estado === "fuera" && <button className="boton primario" disabled={pendiente} onClick={() => ejecutar(() => acc.volverAServicio({ movil: m.id }))}>Vuelve a servicio</button>}
@@ -157,6 +159,17 @@ export function Gestion(p: Props) {
               </label>
               <label className="campo"><span>Observación (opcional)</span><input className="entrada" name="obs" maxLength={200} placeholder="Aprehendido: entrega en Unidad Judicial" /></label>
               <Botones pendiente={pendiente} volver={() => setAccion(null)} texto="Guardar" />
+            </form>
+          )}
+          {accion === "designacion" && s && (
+            <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); ejecutar(() => acc.cambiarDesignacion({ servicio: s.id, designacion: `${String(f.get("nombre")).trim()} ${String(f.get("numero")).trim()}`.trim() })); }}>
+              <p className="text-sm text-tenue">Por ejemplo, cuando cambia de frecuencia. La designación anterior queda guardada y Monitoreo lo puede ubicar por cualquiera de las dos.</p>
+              <div className="grid grid-cols-[1fr_7rem] gap-3">
+                <label className="campo"><span>Nueva designación</span><input className="entrada" name="nombre" list="designaciones-cambio" required autoComplete="off" />
+                  <datalist id="designaciones-cambio">{p.datos.designaciones.map((d) => <option key={d.nombre} value={d.nombre} />)}</datalist></label>
+                <label className="campo"><span>Número</span><input className="entrada" name="numero" inputMode="numeric" maxLength={3} /></label>
+              </div>
+              <Botones pendiente={pendiente} volver={() => setAccion(null)} texto="Cambiar designación" />
             </form>
           )}
           {accion === "fin" && s && (

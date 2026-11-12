@@ -19,7 +19,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
 }) {
   const arbol = useMemo(() => crearArbol(datos.unidades), [datos.unidades]);
   const ahora = useAhora();
-  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal"], "tablero");
+  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal", "reporte_frecuencia"], "tablero");
   const [aviso, setAviso] = useState<{ ok: boolean; texto: string } | null>(null);
   const [pendiente, iniciar] = useTransition();
   const correr = (fn: () => Promise<{ ok?: string; error?: string }>) =>
@@ -92,6 +92,15 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
                 <li key={m.id}>{NOMBRE_DIRECCION[dir] ?? dir} · {arbol.corto(m.unidad)} · {textoMovil(m)}{abiertos.get(m.id)?.designacion ? ` · ${abiertos.get(m.id)!.designacion}` : ""} · venció hace {hace(abiertos.get(m.id)!.fin_previsto, ahora)}</li>
               ))}
             </ul>
+          </div>
+        )}
+        {datos.reportes.filter((r) => !r.resuelto_en && visible(r.direccion ?? "G")).length > 0 && (
+          <div className="aviso mal">
+            <b>Escuchados en frecuencia sin estar agendados:</b>
+            <ul className="mt-1 text-sm">{datos.reportes.filter((r) => !r.resuelto_en && visible(r.direccion ?? "G")).map((r) => {
+              const m = r.movil ? movilPorId.get(r.movil) : undefined;
+              return <li key={r.id}>{hora(r.creado_en)} Hs · «{r.texto}»{m ? ` · ${textoMovil(m)} · ${NOMBRE_DIRECCION[r.direccion ?? ""] ?? ""}` : " · no figura en la flota"} · hace {hace(r.creado_en, ahora)}</li>;
+            })}</ul>
           </div>
         )}
         {reclamosAbiertos.length === 0 && automaticos.length === 0 && <p className="text-sm text-tenue">No hay reclamos pendientes.</p>}

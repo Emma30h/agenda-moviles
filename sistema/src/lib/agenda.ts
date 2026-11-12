@@ -16,7 +16,7 @@ export type Integrante = { dni: string; rol: "jefe" | "chofer" | "acompanante"; 
 export type Servicio = {
   id: string; movil: string; unidad: string; fecha: string; turno: string; designacion: string | null;
   inicio: string; fin_previsto: string; ocupado_motivo: string | null; ocupado_obs: string | null; ocupado_desde: string | null;
-  relevo_de: string | null; dotacion: Integrante[];
+  relevo_de: string | null; designaciones_previas: string[]; dotacion: Integrante[];
 };
 export type FueraServicio = { id: number; movil: string; motivo: string; obs: string | null; desde: string };
 export type Reserva = { id: number; movil: string; fecha: string; turno: string; motivo: string; obs: string | null; creado_en: string };
@@ -156,3 +156,5 @@ export const hace = (iso: string, ahora = Date.now()) => {
 
 export type Prestamo = { id: number; movil: string; origen: string; destino: string; con_dotacion: boolean; obs: string | null; desde: string };
 export type PrestamoPersona = { id: number; dni: string; origen: string; destino: string; fecha: string; turno: string; obs: string | null };
+
+export type ReporteFrecuencia = { id: number; texto: string; movil: string | null; direccion: string | null; creado_en: string; resuelto_en: string | null; automatico: boolean };

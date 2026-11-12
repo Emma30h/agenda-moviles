@@ -8,7 +8,7 @@ import {
   coincide, crearArbol, diaHora, hoyCordoba, ESTADOS, estadoMovil, fechaCorta, hora, minutosVencido, nombrePersona, textoMovil,
   TOLERANCIA_RELEVO_MIN, type Designacion, type Estado, type FueraServicio, type Motivo, type Movil, type Persona,
   type Reclamo, type Reserva, type Servicio, type Situacion, type Turno, type Unidad, hace, NOMBRE_DIRECCION,
-  type Prestamo, type PrestamoPersona,
+  type Prestamo, type PrestamoPersona, type ReporteFrecuencia,
 } from "@/lib/agenda";
 import { resolverReclamo } from "../tablero/acciones";
 import { Gestion } from "./gestion";
@@ -16,7 +16,7 @@ import { Gestion } from "./gestion";
 export type Datos = {
   unidades: Unidad[]; turnos: Turno[]; motivos: Motivo[]; moviles: Movil[]; personal: Persona[]; situaciones: Situacion[];
   servicios: Servicio[]; fuera: FueraServicio[]; reservas: Reserva[]; designaciones: Designacion[]; reclamos: Reclamo[];
-  prestamos: Prestamo[]; prestamosPersonal: PrestamoPersona[];
+  prestamos: Prestamo[]; prestamosPersonal: PrestamoPersona[]; reportes: ReporteFrecuencia[];
 };
 
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
@@ -34,8 +34,9 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
   const [busqueda, setBusqueda] = useState("");
   const [abierto, setAbierto] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal"], "agenda");
+  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal", "reporte_frecuencia"], "agenda");
   const [resolviendo, iniciar] = useTransition();
+  const reportesAbiertos = datos.reportes.filter((r) => !r.resuelto_en && r.direccion && (raiz === "G" || r.direccion === raiz || arbol.dentro(r.direccion, raiz) || arbol.dentro(raiz, r.direccion)));
   const reclamosAbiertos = datos.reclamos.filter((r) => !r.resuelto_en && (raiz === "G" || r.direccion === raiz || arbol.dentro(r.direccion, raiz) || arbol.dentro(raiz, r.direccion)));
 
   const abiertos = useMemo(() => new Map(datos.servicios.map((s) => [s.movil, s])), [datos.servicios]);
@@ -125,6 +126,17 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
             </div>
           ))}
           <span className="text-[12.5px]">Se cierran solos cuando se agenda o reserva lo pedido.</span>
+        </div>
+      )}
+
+      {reportesAbiertos.length > 0 && (
+        <div className="aviso mal grid gap-1">
+          <b>Escuchados en frecuencia sin estar agendados ({reportesAbiertos.length})</b>
+          {reportesAbiertos.map((r) => {
+            const m = r.movil ? datos.moviles.find((x) => x.id === r.movil) : undefined;
+            return <span key={r.id} className="text-sm">{hora(r.creado_en)} Hs · se escuchó «{r.texto}»{m ? ` · ${textoMovil(m)} · ${arbol.corto(usa(m))}` : " · no figura en la flota"}</span>;
+          })}
+          <span className="text-[12.5px]">Se cierran solos cuando el móvil se agenda.</span>
         </div>
       )}
 

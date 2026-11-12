@@ -18,6 +18,7 @@ export function Encabezado({ perfil }: { perfil: Perfil }) {
         <nav className="flex items-center gap-3 text-sm">
           <Link className="chip" href="/tablero">Tablero</Link>
           <Link className="chip" href="/agenda">Agenda</Link>
+          <Link className="chip" href="/frecuencia">Frecuencia</Link>
           <Link className="chip" href="/moviles">Móviles</Link>
           <Link className="chip" href="/personal">Personal</Link>
           {perfil.rol === "superadmin" && (
