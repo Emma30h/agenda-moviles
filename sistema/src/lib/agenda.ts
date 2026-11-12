@@ -122,3 +122,22 @@ export function motivoNoApto(p: Persona | undefined, fecha: string, situaciones:
 }
 export const nombrePersona = (p: Persona) => `${p.jerarquia ? p.jerarquia + " " : ""}${p.apellido}${p.nombre ? ", " + p.nombre : ""}`;
 export const textoMovil = (m: Movil) => `${m.interno != null ? "Int. " + m.interno + " · " : ""}${m.dominio}`;
+
+/** ¿Difieren en a lo sumo un carácter (cambiado, de más, de menos o dos vecinos invertidos)? */
+export function casiIgual(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  const ra = a.slice(i), rb = b.slice(i);
+  return ra.slice(1) === rb.slice(1) || ra.slice(1) === rb || ra === rb.slice(1) || (ra[0] === rb[1] && ra[1] === rb[0] && ra.slice(2) === rb.slice(2));
+}
+export const compacto = (s: string) => plano(s).replace(/ /g, "");
+
+export const MOTIVOS_BAJA_MOVIL = ["Cargado por error", "Desafectado", "Siniestro total", "Transferido a otra dependencia", "Devuelto", "Otro"];
+export const MOTIVOS_BAJA_PERSONA = ["Cargado por error", "Pase a otra dependencia", "Exoneración", "Cesantía", "Retiro", "Renuncia", "Fallecimiento", "Otro"];
+export const TIPOS_SITUACION = ["TNO", "Licencia médica", "Licencia anual", "Licencia especial", "Suspensión preventiva", "Otra"];
+export const VEHICULOS = ["Sedan", "Pick Up", "Camioneta", "Utilitario", "Moto"];
+export const PROGRAMAS = { ojos_en_alerta: "Ojos en Alerta", policial: "Policial" } as const;
+
+export type Cambio = { id: number; accion: string; antes: Record<string, unknown>; despues: Record<string, unknown>; creado_en: string; deshecho: boolean; revierte: number | null; usuario: string | null };

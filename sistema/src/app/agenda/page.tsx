@@ -31,7 +31,7 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
     todo<Motivo>((a, b) => db.from("motivo").select("id,nombre,categoria,gravedad").order("orden").range(a, b)),
     todo<Movil>((a, b) => db.from("movil").select("id,interno,dominio,programa,tipo,marca,modelo,unidad,revisar").eq("activo", true).order("interno").range(a, b)),
     todo<Persona>((a, b) => db.from("personal").select("dni,apellido,nombre,jerarquia,tipo_personal,unidad,calle,activo").eq("activo", true).order("apellido").range(a, b)),
-    todo<Situacion>((a, b) => db.from("situacion_personal").select("dni,tipo,desde,hasta").or(`hasta.is.null,hasta.gte.${actual.fecha}`).range(a, b)),
+    todo<Situacion>((a, b) => db.from("situacion_personal").select("dni,tipo,desde,hasta").eq("anulada", false).or(`hasta.is.null,hasta.gte.${actual.fecha}`).range(a, b)),
     todo<Omit<Servicio, "dotacion"> & { dotacion: (Servicio["dotacion"][number] & { hasta: string | null })[] }>((a, b) =>
       db.from("servicio").select("id,movil,unidad,fecha,turno,designacion,inicio,fin_previsto,ocupado_motivo,ocupado_obs,ocupado_desde,relevo_de,dotacion(dni,rol,desde,hasta)").is("fin_real", null).range(a, b)),
     todo<FueraServicio>((a, b) => db.from("fuera_servicio").select("id,movil,motivo,obs,desde").is("hasta", null).range(a, b)),
