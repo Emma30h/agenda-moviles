@@ -141,3 +141,14 @@ export const VEHICULOS = ["Sedan", "Pick Up", "Camioneta", "Utilitario", "Moto"]
 export const PROGRAMAS = { ojos_en_alerta: "Ojos en Alerta", policial: "Policial" } as const;
 
 export type Cambio = { id: number; accion: string; antes: Record<string, unknown>; despues: Record<string, unknown>; creado_en: string; deshecho: boolean; revierte: number | null; usuario: string | null };
+
+export type Reclamo = {
+  id: number; direccion: string; movil: string | null; fecha: string; turno: string; total: number | null; texto: string;
+  creado_en: string; resuelto_en: string | null; automatico: boolean;
+};
+export const NOMBRE_DIRECCION: Record<string, string> = { N: "Norte", S: "Sur", M: "Monitoreo", SUB: "Subdirección", G: "Dirección General" };
+/** «hace 1 h 20 min» */
+export const hace = (iso: string, ahora = Date.now()) => {
+  const m = Math.max(0, Math.round((ahora - Date.parse(iso)) / 60000));
+  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${m % 60} min`;
+};

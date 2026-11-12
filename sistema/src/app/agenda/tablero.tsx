@@ -2,18 +2,19 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { clienteNavegador } from "@/lib/supabase/navegador";
+import { useMemo, useState, useTransition } from "react";
+import { useAhora, useEnVivo } from "@/lib/en-vivo";
 import {
   coincide, crearArbol, diaHora, hoyCordoba, ESTADOS, estadoMovil, fechaCorta, hora, minutosVencido, nombrePersona, textoMovil,
   TOLERANCIA_RELEVO_MIN, type Designacion, type Estado, type FueraServicio, type Motivo, type Movil, type Persona,
-  type Reserva, type Servicio, type Situacion, type Turno, type Unidad,
+  type Reclamo, type Reserva, type Servicio, type Situacion, type Turno, type Unidad, hace, NOMBRE_DIRECCION,
 } from "@/lib/agenda";
+import { resolverReclamo } from "../tablero/acciones";
 import { Gestion } from "./gestion";
 
 export type Datos = {
   unidades: Unidad[]; turnos: Turno[]; motivos: Motivo[]; moviles: Movil[]; personal: Persona[]; situaciones: Situacion[];
-  servicios: Servicio[]; fuera: FueraServicio[]; reservas: Reserva[]; designaciones: Designacion[];
+  servicios: Servicio[]; fuera: FueraServicio[]; reservas: Reserva[]; designaciones: Designacion[]; reclamos: Reclamo[];
 };
 
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
@@ -24,41 +25,16 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
 }) {
   const router = useRouter();
   const arbol = useMemo(() => crearArbol(datos.unidades), [datos.unidades]);
-  const [ahora, setAhora] = useState(() => Date.now());
+  const ahora = useAhora();
   const [filtroEstado, setFiltroEstado] = useState<Estado[]>([]);
   const [filtroDir, setFiltroDir] = useState<string[]>([]);
   const [filtroDiv, setFiltroDiv] = useState<string[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [abierto, setAbierto] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
-  const [enVivo, setEnVivo] = useState(false);
-
-  // Reloj: recalcula vencidos sin recargar
-  useEffect(() => {
-    const t = setInterval(() => setAhora(Date.now()), 30_000);
-    return () => clearInterval(t);
-  }, []);
-
-  // Tiempo real: cualquier carga de otra persona refresca esta pantalla
-  const espera = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    const sb = clienteNavegador();
-    const refrescar = () => {
-      if (espera.current) clearTimeout(espera.current);
-      espera.current = setTimeout(() => router.refresh(), 400);
-    };
-    let canal = sb.channel("agenda");
-    for (const tabla of ["servicio", "dotacion", "fuera_servicio", "reserva"]) {
-      canal = canal.on("postgres_changes", { event: "*", schema: "public", table: tabla }, refrescar);
-    }
-    canal.subscribe((estado: string) => setEnVivo(estado === "SUBSCRIBED"));
-    // Respaldo por si se corta la conexión
-    const t = setInterval(() => router.refresh(), 120_000);
-    return () => {
-      clearInterval(t);
-      sb.removeChannel(canal);
-    };
-  }, [router]);
+  const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo"], "agenda");
+  const [resolviendo, iniciar] = useTransition();
+  const reclamosAbiertos = datos.reclamos.filter((r) => !r.resuelto_en && (raiz === "G" || r.direccion === raiz || arbol.dentro(r.direccion, raiz) || arbol.dentro(raiz, r.direccion)));
 
   const abiertos = useMemo(() => new Map(datos.servicios.map((s) => [s.movil, s])), [datos.servicios]);
   const fuera = useMemo(() => new Map(datos.fuera.map((f) => [f.movil, f])), [datos.fuera]);
@@ -132,6 +108,19 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
       </section>
 
       {aviso && <div className="aviso ok flex justify-between gap-3"><span>{aviso}</span><button className="text-sm underline" onClick={() => setAviso(null)}>Cerrar</button></div>}
+
+      {reclamosAbiertos.length > 0 && (
+        <div className="aviso atento grid gap-2">
+          <b>{esCargador ? "Reclamos del General" : "Reclamos abiertos"} ({reclamosAbiertos.length})</b>
+          {reclamosAbiertos.map((r) => (
+            <div key={r.id} className="flex flex-wrap gap-2 items-center justify-between text-sm">
+              <span>{NOMBRE_DIRECCION[r.direccion] ?? r.direccion} · {r.texto} · hace {hace(r.creado_en, ahora)}</span>
+              {edita && <button className="boton" disabled={resolviendo} onClick={() => iniciar(async () => { const x = await resolverReclamo(r.id); setAviso(x.error ?? x.ok ?? null); })}>Marcar resuelto</button>}
+            </div>
+          ))}
+          <span className="text-[12.5px]">Se cierran solos cuando se agenda o reserva lo pedido.</span>
+        </div>
+      )}
 
       {reclamados.length > 0 && (
         <div className="aviso atento">
