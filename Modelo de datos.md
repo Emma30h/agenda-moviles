@@ -90,6 +90,8 @@ erDiagram
 - **Turnos:** todos manejan los mismos rangos horarios, pero puede haber excepciones. Turnos comunes en un catálogo, excepciones por unidad, y cada servicio puede ajustar su inicio y fin a mano.
 - **Integrantes:** usualmente 2, a veces 1. Mínimo 1, sin máximo rígido; salir solo genera una advertencia. A confirmar en entrevista.
 
+- **Fin de turno y relevo (decidido 2026-11-12):** un servicio nunca se cierra ni se desagenda solo. Al vencer el horario pasa a **Pendiente de relevo** y muestra el tiempo vencido. Se resuelve con una de cuatro acciones, todas registradas con usuario y hora: **Relevar** (cierra la dotación saliente y abre el servicio del turno entrante en un solo paso, con la misma designación), **Cerrar y dejar disponible**, **Reservado** o **Sigue ocupado** (procedimiento con motivo). Con **30 minutos** vencido sin acción se genera un reclamo automático al cargador de esa Dirección, visible para el General. Aunque pasen horas, la app **no lo cierra sola**.
+
 ## Recuento por dirección
 
 Propios − prestados a otra + recibidos en préstamo, separados por estado: en servicio, disponibles, fuera de servicio (por motivo) y retenidos por procedimiento. Sale de las mismas tablas para todos.

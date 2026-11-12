@@ -27,13 +27,12 @@ export default async function Inicio({ searchParams }: { searchParams: Promise<{
         <section className="tarjeta p-6 grid gap-2">
           <h2 className="font-semibold">Agenda</h2>
           <p className="text-sm text-tenue">
-            Las pantallas de la agenda (móviles, personal, control en vivo y recuento) se pasan del prototipo en la próxima etapa.
+            Qué móviles están en la calle en esta guardia, con su designación y su dotación, en tiempo real.
           </p>
-          {perfil.rol === "superadmin" && (
-            <div className="mt-2">
-              <Link className="boton primario" href="/admin/solicitudes">Ir a administrar usuarios</Link>
-            </div>
-          )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link className="boton primario" href="/agenda">Abrir la agenda</Link>
+            {perfil.rol === "superadmin" && <Link className="boton" href="/admin/solicitudes">Administrar usuarios</Link>}
+          </div>
         </section>
       </main>
     </>
