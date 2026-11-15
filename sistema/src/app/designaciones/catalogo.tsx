@@ -95,14 +95,13 @@ export function Catalogo({ unidades, designaciones, excepciones, edita }: {
 
       <section className="tarjeta overflow-x-auto">
         <table className="tabla">
-          <thead><tr><th>Nombre</th><th>Otras formas de escribirla</th><th>Zona</th><th>División</th><th className="text-right">Usos en el SAE</th><th></th></tr></thead>
+          <thead><tr><th>Nombre</th><th>Otras formas de escribirla</th><th>Zona</th><th>División</th><th></th></tr></thead>
           <tbody>{lista.map((d) => (
             <tr key={d.nombre} className={edita ? "cursor-pointer hover:bg-[var(--panel-2)]" : ""} onClick={() => edita && setEditando(d)}>
               <td><b>{d.nombre}</b>{!d.activa && <span className="etiqueta ml-2">Desactivada</span>}{d.origen === "app" && <span className="etiqueta info ml-2">Agregada</span>}</td>
               <td className="text-sm text-tenue">{d.alias.join(" · ") || "—"}</td>
               <td>{d.zona ?? "—"}</td>
               <td>{d.unidad ? arbol.corto(d.unidad) : "—"}</td>
-              <td className="text-right">{d.usos || ""}</td>
               <td className="text-sm text-acento">{edita ? "Editar ›" : ""}</td>
             </tr>
           ))}</tbody>

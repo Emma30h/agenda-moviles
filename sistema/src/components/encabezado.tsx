@@ -3,6 +3,7 @@ import Link from "next/link";
 import { salir } from "@/app/(acceso)/acciones";
 import { ROLES, nombreCompleto } from "@/lib/reglas";
 import type { Perfil } from "@/lib/dal";
+import { Pestana } from "./pestana";
 
 export function Encabezado({ perfil }: { perfil: Perfil }) {
   return (
@@ -16,17 +17,13 @@ export function Encabezado({ perfil }: { perfil: Perfil }) {
           </div>
         </Link>
         <nav className="flex items-center gap-3 text-sm">
-          <Link className="chip" href="/tablero">Tablero</Link>
-          <Link className="chip" href="/agenda">Agenda</Link>
-          <Link className="chip" href="/frecuencia">Frecuencia</Link>
-          <Link className="chip" href="/moviles">Móviles</Link>
-          <Link className="chip" href="/personal">Personal</Link>
-          {(perfil.rol === "superadmin" || perfil.rol === "general") && <Link className="chip" href="/designaciones">Designaciones</Link>}
-          {perfil.rol === "superadmin" && (
-            <Link className="chip" href="/admin/solicitudes">
-              Administrar usuarios
-            </Link>
-          )}
+          <Pestana href="/tablero">Tablero</Pestana>
+          <Pestana href="/agenda">Agenda</Pestana>
+          <Pestana href="/frecuencia">Frecuencia</Pestana>
+          <Pestana href="/moviles">Móviles</Pestana>
+          <Pestana href="/personal">Personal</Pestana>
+          {(perfil.rol === "superadmin" || perfil.rol === "general") && <Pestana href="/designaciones">Designaciones</Pestana>}
+          {perfil.rol === "superadmin" && <Pestana href="/admin/solicitudes" base="/admin">Administrar usuarios</Pestana>}
           <div className="text-right leading-tight">
             <div>
               {nombreCompleto(perfil)}
