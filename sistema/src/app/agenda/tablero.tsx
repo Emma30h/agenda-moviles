@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -10,7 +12,7 @@ import {
   type Reclamo, type Reserva, type Servicio, type Situacion, type Turno, type Unidad, hace, NOMBRE_DIRECCION,
   type Prestamo, type PrestamoPersona, type ReporteFrecuencia,
 } from "@/lib/agenda";
-import { resolverReclamo } from "../tablero/acciones";
+import { anularReclamo, resolverReclamo } from "../tablero/acciones";
 import { Gestion } from "./gestion";
 
 export type Datos = {
@@ -22,9 +24,10 @@ export type Datos = {
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
 const DIRECCIONES: Record<string, string> = { N: "Norte", S: "Sur", M: "Monitoreo", SUB: "Subdirección", G: "Dirección General" };
 
-export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
-  datos: Datos; guardia: { fecha: string; turno: string }; raiz: string; edita: boolean; esCargador: boolean;
+export function Tablero({ datos, guardia, raiz, edita, esCargador, reclama = false }: {
+  datos: Datos; guardia: { fecha: string; turno: string }; raiz: string; edita: boolean; esCargador: boolean; reclama?: boolean;
 }) {
+  const confirmar = useConfirmar();
   const router = useRouter();
   const arbol = useMemo(() => crearArbol(datos.unidades), [datos.unidades]);
   const ahora = useAhora();
@@ -122,7 +125,7 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador }: {
           {reclamosAbiertos.map((r) => (
             <div key={r.id} className="flex flex-wrap gap-2 items-center justify-between text-sm">
               <span>{NOMBRE_DIRECCION[r.direccion] ?? r.direccion} · {r.texto} · hace {hace(r.creado_en, ahora)}</span>
-              {edita && <button className="boton" disabled={resolviendo} onClick={() => iniciar(async () => { const x = await resolverReclamo(r.id); setAviso(x.error ?? x.ok ?? null); })}>Marcar resuelto</button>}
+              {edita && <button className="boton" disabled={resolviendo} onClick={async () => { if (await confirmar({ titulo: "¿Marcar el reclamo como resuelto?", mensaje: `${r.texto}. Deja de figurar como pendiente y queda en el registro.`, boton: "Marcar resuelto" })) iniciar(async () => { const x = await resolverReclamo(r.id); setAviso(x.error ?? x.ok ?? null); }); }}>Marcar resuelto</button>} {reclama && <button className="boton peligro" disabled={resolviendo} onClick={async () => { if (await confirmar({ titulo: "¿Anular el reclamo?", mensaje: `${r.texto}. Usalo si fue un error: se le saca al cargador y queda registrado como anulado, aparte de los resueltos.`, boton: "Anular", peligro: true })) iniciar(async () => { const x = await anularReclamo(r.id); setAviso(x.error ?? x.ok ?? null); }); }}>Anular (fue un error)</button>}
             </div>
           ))}
           <span className="text-[12.5px]">Se cierran solos cuando se agenda o reserva lo pedido.</span>

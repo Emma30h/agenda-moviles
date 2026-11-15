@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import { useMemo, useState, useTransition } from "react";
 import { Dialogo } from "@/components/dialogo";
 import { coincide, compacto, crearArbol, diaHora, hace, type Unidad } from "@/lib/agenda";
@@ -122,6 +124,7 @@ export function Catalogo({ unidades, designaciones, excepciones, edita }: {
 function Pendiente({ e, arbol, unidades, designaciones, edita, onResultado }: {
   e: Excepcion; arbol: Arbol; unidades: Unidad[]; designaciones: DesignacionFila[]; edita: boolean; onResultado: (r: { ok?: string; error?: string }) => void;
 }) {
+  const confirmar = useConfirmar();
   const [modo, setModo] = useState<"ver" | "agregar" | "alias">("ver");
   const [pendiente, iniciar] = useTransition();
   const correr = (fn: () => Promise<{ ok?: string; error?: string }>) => iniciar(async () => onResultado(await fn()));
@@ -144,7 +147,7 @@ function Pendiente({ e, arbol, unidades, designaciones, edita, onResultado }: {
         <div className="flex flex-wrap gap-2">
           <button className="boton primario" onClick={() => setModo("agregar")}>Agregar al catálogo</button>
           <button className="boton" onClick={() => setModo("alias")}>Es otra forma de escribir…</button>
-          <button className="boton" disabled={pendiente} onClick={() => correr(() => descartarExcepcion(e.id))}>Descartar</button>
+          <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿Descartar «${e.ejemplo}»?`, mensaje: "No se agrega al catálogo. Si se vuelve a usar, aparece de nuevo como pendiente.", boton: "Descartar", peligro: true })) correr(() => descartarExcepcion(e.id)); }}>Descartar</button>
         </div>
       )}
       {modo === "agregar" && (

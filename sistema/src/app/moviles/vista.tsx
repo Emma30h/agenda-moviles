@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import Image from "next/image";
 import { useMemo, useState, useTransition } from "react";
 import { Dialogo } from "@/components/dialogo";
@@ -120,6 +122,7 @@ function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, f
   m: MovilFicha; arbol: Arbol; unidades: Unidad[]; moviles: MovilFicha[]; raizEdita: string | null; editable: boolean;
   enServicio?: string; fuera: boolean; prestamo?: Prestamo; puedeDevolver: boolean; esGeneral: boolean; onCerrar: () => void; onAviso: (s: string) => void;
 }) {
+  const confirmar = useConfirmar();
   const [modo, setModo] = useState<"ver" | "editar" | "baja" | "prestar">("ver");
   const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -141,7 +144,7 @@ function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, f
           {m.activo && <button className="boton primario" onClick={() => setModo("editar")}>Editar datos o cambiar de división</button>}
           {m.activo && !prestamo && <button className="boton" onClick={() => setModo("prestar")}>Prestar</button>}
           {m.activo && <button className="boton peligro" onClick={() => setModo("baja")}>Dar de baja</button>}
-          {!m.activo && <button className="boton primario" disabled={pendiente} onClick={() => iniciar(async () => { setError(null); const r = await reincorporarMovil(m.id); if (r.error) setError(r.error); else listo(r.ok!); })}>Reincorporar</button>}
+          {!m.activo && <button className="boton primario" disabled={pendiente} onClick={async () => !(await confirmar({ titulo: `¿Reincorporar el ${textoMovil(m)}?`, mensaje: "Vuelve a estar activo y se puede agendar. Queda en el historial.", boton: "Reincorporar" })) ? undefined : iniciar(async () => { setError(null); const r = await reincorporarMovil(m.id); if (r.error) setError(r.error); else listo(r.ok!); })}>Reincorporar</button>}
         </div>
       )}
       {modo === "editar" && raizEdita && (
@@ -155,7 +158,7 @@ function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, f
       )}
       {puedeDevolver && modo === "ver" && (
         <div className="mt-3"><button className="boton primario" disabled={pendiente || !!enServicio} title={enServicio ? "Cerralo antes de devolverlo" : undefined}
-          onClick={() => iniciar(async () => { setError(null); const r = await devolverMovil(m.id); if (r.error) setError(r.error); else listo(r.ok!); })}>Devolver a {arbol.corto(prestamo!.origen)}</button></div>
+          onClick={async () => !(await confirmar({ titulo: `¿Devolver el ${textoMovil(m)} a ${arbol.corto(prestamo!.origen)}?`, mensaje: "Termina el préstamo: vuelve a agendarlo su unidad.", boton: "Devolver" })) ? undefined : iniciar(async () => { setError(null); const r = await devolverMovil(m.id); if (r.error) setError(r.error); else listo(r.ok!); })}>Devolver a {arbol.corto(prestamo!.origen)}</button></div>
       )}
       {modo === "prestar" && raizEdita && (
         <FormPrestar arbol={arbol} unidades={unidades} raiz={esGeneral ? "G" : arbol.direccion(m.unidad)} origen={m.unidad} enServicio={!!enServicio} pendiente={pendiente}

@@ -145,7 +145,7 @@ export type Cambio = { id: number; accion: string; antes: Record<string, unknown
 
 export type Reclamo = {
   id: number; direccion: string; movil: string | null; fecha: string; turno: string; total: number | null; texto: string;
-  creado_en: string; resuelto_en: string | null; automatico: boolean;
+  creado_en: string; resuelto_en: string | null; automatico: boolean; anulado: boolean;
 };
 export const NOMBRE_DIRECCION: Record<string, string> = { N: "Norte", S: "Sur", M: "Monitoreo", SUB: "Subdirección", G: "Dirección General" };
 /** «hace 1 h 20 min» */
@@ -157,4 +157,4 @@ export const hace = (iso: string, ahora = Date.now()) => {
 export type Prestamo = { id: number; movil: string; origen: string; destino: string; con_dotacion: boolean; obs: string | null; desde: string };
 export type PrestamoPersona = { id: number; dni: string; origen: string; destino: string; fecha: string; turno: string; obs: string | null };
 
-export type ReporteFrecuencia = { id: number; texto: string; movil: string | null; direccion: string | null; creado_en: string; resuelto_en: string | null; automatico: boolean };
+export type ReporteFrecuencia = { id: number; texto: string; movil: string | null; direccion: string | null; creado_en: string; resuelto_en: string | null; automatico: boolean; anulado: boolean; creado_por: string | null };

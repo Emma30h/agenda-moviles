@@ -17,7 +17,8 @@ export default async function Frecuencia() {
       <Encabezado perfil={perfil} />
       <main className="max-w-6xl mx-auto w-full px-4 py-6">
         <Consulta datos={datos} guardia={guardiaActual()} raiz={raiz}
-          puedeResolver={!!perfil.rol && ["superadmin", "general", "monitoreo", "cargador"].includes(perfil.rol)} />
+          puedeResolver={!!perfil.rol && ["superadmin", "general", "monitoreo", "cargador"].includes(perfil.rol)}
+          yo={perfil.id} anulaTodos={!!perfil.rol && ["superadmin", "general", "monitoreo"].includes(perfil.rol)} />
       </main>
     </>
   );

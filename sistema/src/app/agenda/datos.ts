@@ -26,10 +26,10 @@ export async function cargarOperacion() {
     todo<FueraServicio>((a, b) => db.from("fuera_servicio").select("id,movil,motivo,obs,desde").is("hasta", null).order("id").range(a, b)),
     todo<Reserva>((a, b) => db.from("reserva").select("id,movil,fecha,turno,motivo,obs,creado_en").eq("anulada", false).gte("fecha", actual.fecha).order("id").range(a, b)),
     todo<Designacion>((a, b) => db.from("designacion").select("nombre,zona,unidad,alias").eq("activa", true).order("nombre").range(a, b)),
-    todo<Reclamo>((a, b) => db.from("reclamo").select("id,direccion,movil,fecha,turno,total,texto,creado_en,resuelto_en,automatico").or(`resuelto_en.is.null,resuelto_en.gte.${hace24}`).order("id", { ascending: false }).range(a, b)),
+    todo<Reclamo>((a, b) => db.from("reclamo").select("id,direccion,movil,fecha,turno,total,texto,creado_en,resuelto_en,automatico,anulado").or(`resuelto_en.is.null,resuelto_en.gte.${hace24}`).order("id", { ascending: false }).range(a, b)),
     todo<Prestamo>((a, b) => db.from("prestamo").select("id,movil,origen,destino,con_dotacion,obs,desde").is("hasta", null).order("id").range(a, b)),
     todo<PrestamoPersona>((a, b) => db.from("prestamo_personal").select("id,dni,origen,destino,fecha,turno,obs").eq("anulado", false).gte("fecha", actual.fecha).order("id").range(a, b)),
-    todo<ReporteFrecuencia>((a, b) => db.from("reporte_frecuencia").select("id,texto,movil,direccion,creado_en,resuelto_en,automatico").or(`resuelto_en.is.null,resuelto_en.gte.${hace24}`).order("id", { ascending: false }).range(a, b)),
+    todo<ReporteFrecuencia>((a, b) => db.from("reporte_frecuencia").select("id,texto,movil,direccion,creado_en,resuelto_en,automatico,anulado,creado_por").or(`resuelto_en.is.null,resuelto_en.gte.${hace24}`).order("id", { ascending: false }).range(a, b)),
   ]);
 
   const abiertos = servicios.map((s) => ({ ...s, dotacion: s.dotacion.filter((d) => !d.hasta).map(({ dni, rol, desde }) => ({ dni, rol, desde })) }));

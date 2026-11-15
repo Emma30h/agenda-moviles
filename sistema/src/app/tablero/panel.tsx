@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
@@ -9,7 +11,7 @@ import {
   textoMovil, TOLERANCIA_RELEVO_MIN, type Estado, type Movil,
 } from "@/lib/agenda";
 import type { Datos } from "../agenda/tablero";
-import { reclamarDireccion, reclamarMovil, resolverReclamo } from "./acciones";
+import { anularReclamo, reclamarDireccion, reclamarMovil, resolverReclamo } from "./acciones";
 
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
 const COLUMNAS: Estado[] = ["servicio", "programado", "pendiente", "ocupado", "sin_agendar", "reservado", "fuera"];
@@ -17,6 +19,7 @@ const COLUMNAS: Estado[] = ["servicio", "programado", "pendiente", "ocupado", "s
 export function Panel({ datos, guardia, raiz, reclama, edita }: {
   datos: Datos; guardia: { fecha: string; turno: string }; raiz: string; reclama: boolean; edita: boolean;
 }) {
+  const confirmar = useConfirmar();
   const arbol = useMemo(() => crearArbol(datos.unidades), [datos.unidades]);
   const ahora = useAhora();
   const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal", "reporte_frecuencia"], "tablero");
@@ -124,7 +127,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
                       <td>{NOMBRE_DIRECCION[r.direccion] ?? r.direccion}</td>
                       <td className="text-sm">{r.texto}</td>
                       <td>{ahoraTxt}</td>
-                      <td>{edita && <button className="boton" disabled={pendiente} onClick={() => correr(() => resolverReclamo(r.id))}>Marcar resuelto</button>}</td>
+                      <td className="flex flex-wrap gap-2">{edita && <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: "¿Marcar el reclamo como resuelto?", mensaje: `${r.texto}. Deja de figurar como pendiente y queda en el registro.`, boton: "Marcar resuelto" })) correr(() => resolverReclamo(r.id)); }}>Marcar resuelto</button>} {reclama && <button className="boton peligro" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: "¿Anular el reclamo?", mensaje: `${r.texto}. Usalo si fue un error: se le saca al cargador y queda registrado como anulado, aparte de los resueltos.`, boton: "Anular", peligro: true })) correr(() => anularReclamo(r.id)); }}>Anular (fue un error)</button>}</td>
                     </tr>
                   );
                 })}
@@ -137,7 +140,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
             <summary className="cursor-pointer text-sm">Resueltos en las últimas 24 Hs ({resueltos.length})</summary>
             <ul className="mt-2 grid gap-1 text-sm">
               {resueltos.map((r) => (
-                <li key={r.id}>{diaHora(r.resuelto_en!)} · {NOMBRE_DIRECCION[r.direccion] ?? r.direccion} · {r.texto} · <span className={`etiqueta ${r.automatico ? "ok" : "info"}`}>{r.automatico ? "Se resolvió solo" : "Marcado a mano"}</span> · tardó {hace(r.creado_en, Date.parse(r.resuelto_en!))}</li>
+                <li key={r.id}>{diaHora(r.resuelto_en!)} · {NOMBRE_DIRECCION[r.direccion] ?? r.direccion} · {r.texto} · <span className={`etiqueta ${r.anulado ? "" : r.automatico ? "ok" : "info"}`}>{r.anulado ? "Anulado por error" : r.automatico ? "Se resolvió solo" : "Marcado a mano"}</span> · tardó {hace(r.creado_en, Date.parse(r.resuelto_en!))}</li>
               ))}
             </ul>
           </details>
@@ -171,7 +174,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
                 <span className="etiqueta info">En un móvil {enMovil}</span>
               </div>
               {reclama && c.sin_agendar > 0 && (
-                <button className="boton peligro" disabled={pendiente || ya} onClick={() => correr(() => reclamarDireccion(d, guardia.fecha, guardia.turno))}>
+                <button className="boton peligro" disabled={pendiente || ya} onClick={async () => { if (await confirmar({ titulo: `¿Reclamar a la Dirección ${NOMBRE_DIRECCION[d] ?? d} los ${c.sin_agendar} móviles sin agendar?`, mensaje: "Le aparece al cargador arriba de la Agenda. Se cierra solo cuando los agendan o reservan.", boton: "Reclamar" })) correr(() => reclamarDireccion(d, guardia.fecha, guardia.turno)); }}>
                   {ya ? "Ya reclamado en esta guardia" : `Reclamar los ${c.sin_agendar} sin agendar`}
                 </button>
               )}
@@ -277,7 +280,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
                   <td className="text-sm">{[m.marca, m.modelo].filter(Boolean).join(" ")}</td>
                   <td>{arbol.corto(m.unidad)}</td>
                   <td>{NOMBRE_DIRECCION[dir] ?? dir}</td>
-                  <td>{reclama && <button className="boton" disabled={pendiente || ya} onClick={() => correr(() => reclamarMovil(m.id, guardia.fecha, guardia.turno))}>{ya ? "Reclamado" : "Reclamar"}</button>}</td>
+                  <td>{reclama && <button className="boton" disabled={pendiente || ya} onClick={async () => { if (await confirmar({ titulo: `¿Reclamar el ${textoMovil(m)}?`, mensaje: `Le llega al cargador de ${NOMBRE_DIRECCION[dir] ?? dir}. Se cierra solo cuando lo agendan o reservan.`, boton: "Reclamar" })) correr(() => reclamarMovil(m.id, guardia.fecha, guardia.turno)); }}>{ya ? "Reclamado" : "Reclamar"}</button>}</td>
                 </tr>
               );
             })}

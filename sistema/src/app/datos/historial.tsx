@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import { useEffect, useState, useTransition } from "react";
 import { diaHora, type Cambio } from "@/lib/agenda";
 import { deshacer, historialDe } from "./acciones";
@@ -17,6 +19,7 @@ export function Historial({ tabla, registro, puedeEditar, nombreUnidad, version,
   tabla: "movil" | "personal"; registro: string; puedeEditar: boolean; nombreUnidad: (u: string) => string;
   version: number; onCambio: (mensaje: string) => void;
 }) {
+  const confirmar = useConfirmar();
   const [datos, setDatos] = useState<Awaited<ReturnType<typeof historialDe>> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pendiente, iniciar] = useTransition();
@@ -58,7 +61,7 @@ export function Historial({ tabla, registro, puedeEditar, nombreUnidad, version,
                   )}
                 </span>
                 {puedeEditar && ultimo?.id === c.id && c.accion !== "Alta" && (
-                  <button className="boton" disabled={pendiente} onClick={() => iniciar(async () => {
+                  <button className="boton" disabled={pendiente} onClick={async () => !(await confirmar({ titulo: `¿Deshacer «${c.accion}»?`, mensaje: "Los datos vuelven a como estaban antes de ese cambio. Queda registrado.", boton: "Deshacer", peligro: true })) ? undefined : iniciar(async () => {
                     setError(null);
                     const r = await deshacer(c.id);
                     if (r.error) setError(r.error); else onCambio(r.ok!);

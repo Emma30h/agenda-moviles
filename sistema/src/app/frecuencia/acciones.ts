@@ -141,3 +141,14 @@ export async function resolverReporte(id: number): Promise<{ error?: string; ok?
   revalidatePath("/tablero");
   return { ok: "Reporte resuelto." };
 }
+
+export async function anularReporte(id: number): Promise<{ error?: string; ok?: string }> {
+  await exigirActivo();
+  const db = await clienteSesion();
+  const { error } = await db.rpc("anular_reporte", { p_id: id });
+  if (error) return { error: error.code === "P0001" ? error.message : "No se pudo guardar. Probá de nuevo." };
+  revalidatePath("/frecuencia");
+  revalidatePath("/agenda");
+  revalidatePath("/tablero");
+  return { ok: "Reporte anulado." };
+}

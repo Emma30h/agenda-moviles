@@ -25,3 +25,4 @@ export const reclamarDireccion = async (direccion: string, fecha: string, turno:
 export const reclamarMovil = async (movil: string, fecha: string, turno: string) =>
   llamar("reclamar_movil", { p_movil: movil, p_fecha: fecha, p_turno: turno }, "Reclamo enviado por ese móvil.");
 export const resolverReclamo = async (id: number) => llamar("resolver_reclamo", { p_id: id }, "Reclamo marcado como resuelto.");
+export const anularReclamo = async (id: number) => llamar("anular_reclamo", { p_id: id }, "Reclamo anulado: ya no le aparece al cargador.");

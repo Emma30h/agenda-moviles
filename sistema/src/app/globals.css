@@ -85,3 +85,9 @@ select.entrada { appearance: auto; }
 .dialogo::backdrop { background: rgb(0 0 0 / .6); }
 .paso { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-top: 12px; font-size: 14px; }
 .paso.m-0 { margin-top: 0; }
+
+/* ---------- tarjeta de confirmación ---------- */
+.dialogo.confirmar { width: min(460px, calc(100vw - 24px)); }
+.confirmar-icono { flex: none; width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-weight: 700;
+  background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+.confirmar-icono.peligro { background: var(--bad-bg); color: var(--bad); }

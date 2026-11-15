@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useRef, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { REQUISITOS_CLAVE, type EstadoFormulario } from "@/lib/reglas";
+import { useConfirmar } from "@/components/confirmar";
 
 type Accion = (prev: EstadoFormulario, fd: FormData) => Promise<EstadoFormulario>;
 
@@ -19,13 +20,21 @@ export function Formulario({
   confirmar?: string;
 }) {
   const [estado, formAction] = useActionState(accion, {});
+  const pedir = useConfirmar();
+  const aprobado = useRef(false);
   return (
     <form
       action={formAction}
       className={className}
       noValidate
       onSubmit={(e) => {
-        if (confirmar && !window.confirm(confirmar)) e.preventDefault();
+        if (!confirmar || aprobado.current) { aprobado.current = false; return; }
+        // Primero la tarjeta de confirmación; si acepta, se envía de nuevo
+        e.preventDefault();
+        const form = e.currentTarget, boton = (e.nativeEvent as SubmitEvent).submitter as HTMLElement | null;
+        pedir({ titulo: confirmar, boton: boton?.textContent?.trim() || "Confirmar", peligro: boton?.classList.contains("peligro") }).then((ok) => {
+          if (ok) { aprobado.current = true; form.requestSubmit(boton ?? undefined); }
+        });
       }}
     >
       {estado.error && (

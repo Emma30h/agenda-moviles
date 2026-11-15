@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   coincide, crearArbol, diaHora, ESTADOS, fechaCorta, guardiaSiguiente, hora, minutosVencido, MOTIVOS_RESERVA, motivoNoApto,
@@ -23,6 +25,7 @@ const desdeLocal = (v: string) => (v ? new Date(v + ":00-03:00").toISOString() :
 const aLocal = (iso: string) => new Date(Date.parse(iso) - 3 * 3600e3).toISOString().slice(0, 16);
 
 export function Gestion(p: Props) {
+  const confirmar = useConfirmar();
   const dlg = useRef<HTMLDialogElement>(null);
   const [accion, setAccion] = useState<Accion>(null);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +104,7 @@ export function Gestion(p: Props) {
         <div className="flex flex-wrap gap-2 mt-4">
           {(estado === "sin_agendar" || estado === "reservado") && <button className="boton primario" onClick={() => setAccion("agendar")}>Agendar</button>}
           {estado === "sin_agendar" && <button className="boton" onClick={() => setAccion("reservar")}>Reservar (no sale en esta guardia)</button>}
-          {estado === "reservado" && p.reserva && <button className="boton" disabled={pendiente} onClick={() => ejecutar(() => acc.quitarReserva({ reserva: p.reserva!.id }))}>Quitar reserva</button>}
+          {estado === "reservado" && p.reserva && <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: "¿Quitar la reserva?", mensaje: "El móvil vuelve a figurar sin agendar en esta guardia.", boton: "Quitar reserva" })) ejecutar(() => acc.quitarReserva({ reserva: p.reserva!.id })); }}>Quitar reserva</button>}
           {s && <>
             <button className="boton primario" onClick={() => setAccion("relevar")}>Relevar</button>
             <button className="boton" onClick={() => setAccion("cerrar")}>Cerrar servicio</button>
@@ -110,7 +113,7 @@ export function Gestion(p: Props) {
             <button className="boton" onClick={() => setAccion("designacion")}>Cambiar designación</button>
           </>}
           {estado !== "fuera" && <button className="boton peligro" onClick={() => setAccion("fuera")}>Fuera de servicio</button>}
-          {estado === "fuera" && <button className="boton primario" disabled={pendiente} onClick={() => ejecutar(() => acc.volverAServicio({ movil: m.id }))}>Vuelve a servicio</button>}
+          {estado === "fuera" && <button className="boton primario" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿${textoMovil(m)} vuelve a servicio?`, mensaje: "Se cierra el fuera de servicio y queda disponible para agendar.", boton: "Vuelve a servicio" })) ejecutar(() => acc.volverAServicio({ movil: m.id })); }}>Vuelve a servicio</button>}
         </div>
       )}
 

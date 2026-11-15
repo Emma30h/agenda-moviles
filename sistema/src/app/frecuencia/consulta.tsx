@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import Image from "next/image";
 import { useMemo, useState, useTransition } from "react";
 import { useAhora, useEnVivo } from "@/lib/en-vivo";
@@ -7,12 +9,13 @@ import {
   crearArbol, diaHora, ESTADOS, estadoMovil, hace, hora, NOMBRE_DIRECCION, ROLES_DOTACION, textoMovil,
 } from "@/lib/agenda";
 import type { Datos } from "../agenda/tablero";
-import { consultarFrecuencia, resolverReporte, type Respuesta } from "./acciones";
+import { anularReporte, consultarFrecuencia, resolverReporte, type Respuesta } from "./acciones";
 
 const LOGO = { ojos_en_alerta: "/img/ojos-en-alerta.png", policial: "/img/policia-cordoba.png" } as const;
-export function Consulta({ datos, guardia, puedeResolver, raiz }: {
-  datos: Datos; guardia: { fecha: string; turno: string }; puedeResolver: boolean; raiz: string;
+export function Consulta({ datos, guardia, puedeResolver, raiz, yo, anulaTodos }: {
+  datos: Datos; guardia: { fecha: string; turno: string }; puedeResolver: boolean; raiz: string; yo: string; anulaTodos: boolean;
 }) {
+  const confirmar = useConfirmar();
   const arbol = useMemo(() => crearArbol(datos.unidades), [datos.unidades]);
   const ahora = useAhora();
   const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reporte_frecuencia", "prestamo"], "frecuencia");
@@ -76,7 +79,7 @@ export function Consulta({ datos, guardia, puedeResolver, raiz }: {
                     <td>{m ? textoMovil(m) : <span className="etiqueta mal">No figura en la flota</span>}</td>
                     <td>{r.direccion ? NOMBRE_DIRECCION[r.direccion] ?? r.direccion : "—"}</td>
                     <td>{e ? <span className={`etiqueta ${ESTADOS[e].clase}`}>{ESTADOS[e].texto}</span> : "—"}</td>
-                    <td>{puedeResolver && <button className="boton" disabled={pendiente} onClick={() => iniciar(async () => { const x = await resolverReporte(r.id); if (x.error) setError(x.error); })}>Resolver</button>}</td>
+                    <td className="flex flex-wrap gap-2">{puedeResolver && <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿Marcar como resuelto el reporte «${r.texto}»?`, mensaje: "Deja de figurar como pendiente para su Dirección.", boton: "Resolver" })) iniciar(async () => { const x = await resolverReporte(r.id); if (x.error) setError(x.error); }); }}>Resolver</button>} {(anulaTodos || r.creado_por === yo) && <button className="boton peligro" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿Anular el reporte «${r.texto}»?`, mensaje: "Usalo si se escuchó o se cargó mal: se le saca a la Dirección y queda registrado como anulado.", boton: "Anular", peligro: true })) iniciar(async () => { const x = await anularReporte(r.id); if (x.error) setError(x.error); }); }}>Anular (fue un error)</button>}</td>
                   </tr>
                 );
               })}</tbody>
@@ -87,7 +90,7 @@ export function Consulta({ datos, guardia, puedeResolver, raiz }: {
           <details>
             <summary className="cursor-pointer text-sm">Resueltos en las últimas 24 Hs ({resueltos.length})</summary>
             <ul className="mt-2 grid gap-1 text-sm">{resueltos.map((r) => (
-              <li key={r.id}>{diaHora(r.resuelto_en!)} · {r.texto}{r.movil ? ` · ${textoMovil(movil(r.movil))}` : ""} · <span className={`etiqueta ${r.automatico ? "ok" : "info"}`}>{r.automatico ? "Se agendó" : "Resuelto a mano"}</span></li>
+              <li key={r.id}>{diaHora(r.resuelto_en!)} · {r.texto}{r.movil ? ` · ${textoMovil(movil(r.movil))}` : ""} · <span className={`etiqueta ${r.anulado ? "" : r.automatico ? "ok" : "info"}`}>{r.anulado ? "Anulado por error" : r.automatico ? "Se agendó" : "Resuelto a mano"}</span></li>
             ))}</ul>
           </details>
         )}

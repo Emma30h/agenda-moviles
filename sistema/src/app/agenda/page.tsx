@@ -23,7 +23,8 @@ export default async function Agenda({ searchParams }: { searchParams: Promise<{
     <>
       <Encabezado perfil={perfil} />
       <main className="max-w-6xl mx-auto w-full px-4 py-6">
-        <Tablero datos={datos} guardia={{ fecha, turno }} raiz={raiz} edita={edita} esCargador={perfil.rol === "cargador"} />
+        <Tablero datos={datos} guardia={{ fecha, turno }} raiz={raiz} edita={edita} esCargador={perfil.rol === "cargador"}
+          reclama={perfil.rol === "superadmin" || perfil.rol === "general"} />
       </main>
     </>
   );

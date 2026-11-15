@@ -1,5 +1,7 @@
 "use client";
 
+import { useConfirmar } from "@/components/confirmar";
+
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Dialogo } from "@/components/dialogo";
 import {
@@ -135,6 +137,7 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
   situaciones: SituacionFicha[]; enMovil?: string; motivo: string | null; prestamos: PrestamoPersona[]; turnos: Turno[]; esGeneral: boolean;
   onCerrar: () => void; onAviso: (s: string) => void;
 }) {
+  const confirmar = useConfirmar();
   const [modo, setModo] = useState<"ver" | "editar" | "baja" | "situacion" | "prestar">("ver");
   const [version, setVersion] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -180,8 +183,8 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
                 </span>
                 {editable && e !== "fin" && (
                   <span className="flex gap-2">
-                    {e === "vig" && <button className="boton" disabled={pendiente} onClick={() => correr(() => terminarSituacion(s.id))}>Terminar hoy</button>}
-                    <button className="boton" disabled={pendiente} onClick={() => correr(() => quitarSituacion(s.id))}>Quitar</button>
+                    {e === "vig" && <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿Terminar hoy «${s.tipo}»?`, mensaje: "Desde hoy queda apta para ir en un móvil (si no tiene otra situación).", boton: "Terminar hoy" })) correr(() => terminarSituacion(s.id)); }}>Terminar hoy</button>}
+                    <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿Quitar «${s.tipo}»?`, mensaje: "Se anula como si no se hubiera cargado. Usalo solo si fue un error; si terminó, usá «Terminar hoy».", boton: "Quitar", peligro: true })) correr(() => quitarSituacion(s.id)); }}>Quitar</button>
                   </span>
                 )}
               </li>
@@ -196,7 +199,7 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
           <ul className="grid gap-2 mt-2">{prestamos.map((q) => (
             <li key={q.id} className="paso m-0 flex flex-wrap gap-2 items-center justify-between">
               <span>A <b>{arbol.porId.get(q.destino)?.nombre}</b> · {turnos.find((t) => t.id === q.turno)?.nombre} del {fechaCorta(q.fecha)}{q.obs ? ` · ${q.obs}` : ""}</span>
-              {editable && <button className="boton" disabled={pendiente} onClick={() => correr(() => quitarPrestamoPersona(q.id))}>Anular</button>}
+              {editable && <button className="boton" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: "¿Anular el préstamo?", mensaje: "En esa guardia se la vuelve a poder agendar en su propia Dirección.", boton: "Anular", peligro: true })) correr(() => quitarPrestamoPersona(q.id)); }}>Anular</button>}
             </li>
           ))}</ul>
         </div>
@@ -208,7 +211,7 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
           {p.activo && <button className="boton" onClick={() => setModo("editar")}>Editar datos o cargar un pase</button>}
           {p.activo && <button className="boton" onClick={() => setModo("prestar")}>Prestar para una guardia</button>}
           {p.activo && <button className="boton peligro" onClick={() => setModo("baja")}>Dar de baja</button>}
-          {!p.activo && <button className="boton primario" disabled={pendiente} onClick={() => correr(() => reincorporarPersona(p.dni))}>Reincorporar</button>}
+          {!p.activo && <button className="boton primario" disabled={pendiente} onClick={async () => { if (await confirmar({ titulo: `¿Reincorporar a ${nombrePersona(p)}?`, mensaje: "Vuelve a estar activa. Queda en el historial.", boton: "Reincorporar" })) correr(() => reincorporarPersona(p.dni)); }}>Reincorporar</button>}
         </div>
       )}
       {modo === "situacion" && (
