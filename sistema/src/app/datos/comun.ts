@@ -19,3 +19,6 @@ export function alcance(perfil: Perfil) {
   const raizEdita = perfil.rol === "superadmin" || perfil.rol === "general" ? "G" : perfil.rol === "cargador" ? (perfil.jurisdiccion ?? null) : null;
   return { raiz, raizEdita };
 }
+
+/** Fecha y hora de hace n días, en ISO (para filtrar lo reciente). */
+export const haceDias = (n: number) => new Date(Date.now() - n * 864e5).toISOString();

@@ -271,7 +271,7 @@ function FormServicio(p: Props & {
         <label className="campo"><span>Número</span><input className="entrada" inputMode="numeric" value={desNumero} onChange={(e) => setDesNumero(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="20" /></label>
       </div>
       {enUso && <div className="aviso atento">{designacion} ya está en uso por {textoMovil(p.datos.moviles.find((x) => x.id === enUso.movil)!)}. Revisá el número.</div>}
-      {!conocida && <div className="aviso atento">«{desNombre.trim().toUpperCase()}» no está en el catálogo del SAE. Se puede usar igual; revisá que esté bien escrita.</div>}
+      {!conocida && <div className="aviso atento">«{desNombre.trim().toUpperCase()}» no está en el catálogo del SAE. Se puede usar igual: queda anotada para que el General la revise. Fijate que esté bien escrita.</div>}
 
       <Dotacion {...p} relevando={p.relevando} fecha={fecha} turno={turno} filas={dotacion} setFilas={(f) => { setDotacion(f); setFaltan(null); }} dirMovil={dirMovil} />
       {faltan && <div className="aviso mal">{faltan}</div>}

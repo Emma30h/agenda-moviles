@@ -21,6 +21,7 @@ export function Encabezado({ perfil }: { perfil: Perfil }) {
           <Link className="chip" href="/frecuencia">Frecuencia</Link>
           <Link className="chip" href="/moviles">Móviles</Link>
           <Link className="chip" href="/personal">Personal</Link>
+          {(perfil.rol === "superadmin" || perfil.rol === "general") && <Link className="chip" href="/designaciones">Designaciones</Link>}
           {perfil.rol === "superadmin" && (
             <Link className="chip" href="/admin/solicitudes">
               Administrar usuarios
