@@ -1,5 +1,7 @@
 "use client";
 
+import { Procesando } from "@/components/cargando";
+
 import { useConfirmar } from "@/components/confirmar";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -156,6 +158,7 @@ function Ficha({ p, arbol, unidades, personal, raizEdita, editable, situaciones,
 
   return (
     <Dialogo titulo={nombrePersona(p)} subtitulo={`DNI ${p.dni} · ${TIPOS_PERSONAL[p.tipo_personal as TipoPersonal]} · ${arbol.porId.get(p.unidad)?.nombre}`} onCerrar={onCerrar}>
+      <Procesando activo={pendiente} />
       <div className="mt-3 flex flex-wrap gap-2 items-center">
         {!p.activo ? <span className="etiqueta">Dado de baja</span> : enMovil ? <span className="etiqueta info">En un móvil · {enMovil}</span>
           : motivo ? <span className="etiqueta mal">No apto hoy · {motivo}</span> : <span className="etiqueta ok">Apto hoy</span>}
@@ -257,7 +260,7 @@ function FormSituacion({ enMovil, pendiente, onEnviar, onVolver }: {
       {enMovil && vigente && <div className="aviso atento">Está en {enMovil}: al guardar, sale de ese móvil y queda registrado.</div>}
       <div className="flex gap-2 justify-end">
         <button type="button" className="boton" onClick={onVolver}>Volver</button>
-        <button type="submit" className="boton primario" disabled={pendiente || !!malas}>{pendiente ? "Guardando…" : "Guardar situación"}</button>
+        <button type="submit" className="boton primario" disabled={pendiente || !!malas} aria-busy={pendiente}>{pendiente ? "Guardando…" : "Guardar situación"}</button>
       </div>
     </form>
   );
@@ -332,7 +335,7 @@ function FormPersona({ p, arbol, unidades, raizEdita, personal, onListo, onVolve
       {error && <div className="aviso mal">{error}</div>}
       <div className="flex gap-2 justify-end">
         {onVolver && <button type="button" className="boton" onClick={onVolver}>Volver</button>}
-        <button type="submit" className="boton primario" disabled={pendiente || !!ya}>{pendiente ? "Guardando…" : p ? "Guardar cambios" : "Dar de alta"}</button>
+        <button type="submit" className="boton primario" disabled={pendiente || !!ya} aria-busy={pendiente}>{pendiente ? "Guardando…" : p ? "Guardar cambios" : "Dar de alta"}</button>
       </div>
     </form>
   );
@@ -360,7 +363,7 @@ function FormPrestarPersona({ arbol, unidades, turnos, raiz, origen, pendiente, 
       <Campo texto="Observación (opcional)"><input className="entrada" value={obs} onChange={(e) => setObs(e.target.value)} maxLength={200} /></Campo>
       <div className="flex gap-2 justify-end">
         <button type="button" className="boton" onClick={onVolver}>Volver</button>
-        <button type="submit" className="boton primario" disabled={pendiente || !destino || destino === origen}>{pendiente ? "Guardando…" : "Prestar"}</button>
+        <button type="submit" className="boton primario" disabled={pendiente || !destino || destino === origen} aria-busy={pendiente}>{pendiente ? "Guardando…" : "Prestar"}</button>
       </div>
     </form>
   );

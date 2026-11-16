@@ -1,5 +1,7 @@
 "use client";
 
+import { Procesando } from "@/components/cargando";
+
 import { useConfirmar } from "@/components/confirmar";
 
 import Image from "next/image";
@@ -46,6 +48,7 @@ export function Consulta({ datos, guardia, puedeResolver, raiz, yo, anulaTodos }
 
   return (
     <div className="grid gap-5">
+      <Procesando activo={pendiente} />
       <section className="tarjeta p-4 grid gap-3">
         <div className="flex flex-wrap justify-between gap-2 items-start">
           <div>
@@ -56,7 +59,7 @@ export function Consulta({ datos, guardia, puedeResolver, raiz, yo, anulaTodos }
         </div>
         <form className="flex flex-wrap gap-2" onSubmit={consultar}>
           <input className="entrada max-w-md uppercase text-lg" value={q} onChange={(e) => setQ(e.target.value)} placeholder="URCA 10, 361 o AG247UZ" autoFocus autoComplete="off" />
-          <button className="boton primario" disabled={pendiente}>{pendiente ? "Consultando…" : "Verificar"}</button>
+          <button className="boton primario" disabled={pendiente} aria-busy={pendiente}>{pendiente ? "Consultando…" : "Verificar"}</button>
         </form>
         {error && <div className="aviso mal">{error}</div>}
         {res && <Tarjeta r={res} arbol={arbol} onCerrar={() => setRes(null)} />}

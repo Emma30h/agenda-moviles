@@ -1,5 +1,7 @@
 "use client";
 
+import { Procesando } from "@/components/cargando";
+
 import { useConfirmar } from "@/components/confirmar";
 
 import Image from "next/image";
@@ -71,6 +73,7 @@ export function Panel({ datos, guardia, raiz, reclama, edita }: {
 
   return (
     <div className="grid gap-5">
+      <Procesando activo={pendiente} />
       <section className="tarjeta p-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Tablero en vivo</h1>

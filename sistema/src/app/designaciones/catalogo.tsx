@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useConfirmar } from "@/components/confirmar";
 
 import { useMemo, useState, useTransition } from "react";
@@ -138,7 +139,7 @@ function Pendiente({ e, arbol, unidades, designaciones, edita, onResultado }: {
   const [destino, setDestino] = useState(parecidas[0]?.d.nombre ?? "");
 
   return (
-    <div className="paso m-0 grid gap-2">
+    <div data-item className="paso m-0 grid gap-2">
       <div className="flex flex-wrap gap-2 justify-between">
         <span><b>«{e.ejemplo}»</b> <span className="text-tenue text-sm">· usada {e.usos} {e.usos === 1 ? "vez" : "veces"} · última hace {hace(e.ultima_vez)}{e.movil_ref ? ` en ${e.movil_ref.interno != null ? "Int. " + e.movil_ref.interno + " · " : ""}${e.movil_ref.dominio}` : ""}{e.unidad ? ` · ${arbol.corto(e.unidad)}` : ""}</span></span>
         {parecidas.length > 0 && <span className="text-sm text-tenue">Parecidas: {parecidas.map((x) => x.d.nombre).join(", ")}</span>}
@@ -159,7 +160,7 @@ function Pendiente({ e, arbol, unidades, designaciones, edita, onResultado }: {
           </div>
           <div className="flex gap-2 justify-end">
             <button type="button" className="boton" onClick={() => setModo("ver")}>Volver</button>
-            <button className="boton primario" disabled={pendiente}>{pendiente ? "Guardando…" : "Agregar"}</button>
+            <button className="boton primario" disabled={pendiente} aria-busy={pendiente}>{pendiente ? "Guardando…" : "Agregar"}</button>
           </div>
         </form>
       )}
@@ -174,7 +175,7 @@ function Pendiente({ e, arbol, unidades, designaciones, edita, onResultado }: {
           </Campo>
           <div className="flex gap-2 justify-end">
             <button type="button" className="boton" onClick={() => setModo("ver")}>Volver</button>
-            <button className="boton primario" disabled={pendiente || !destino}>{pendiente ? "Guardando…" : "Guardar"}</button>
+            <button className="boton primario" disabled={pendiente || !destino} aria-busy={pendiente}>{pendiente ? "Guardando…" : "Guardar"}</button>
           </div>
         </form>
       )}
@@ -215,7 +216,7 @@ function FormDesignacion({ d, arbol, unidades, zonas, onListo }: {
       </Campo>
       <label className="flex gap-2 items-center text-sm"><input type="checkbox" checked={f.activa} onChange={(e) => setF({ ...f, activa: e.target.checked })} /> Activa (aparece como sugerencia al agendar)</label>
       {error && <div className="aviso mal">{error}</div>}
-      <div className="flex justify-end"><button className="boton primario" disabled={pendiente}>{pendiente ? "Guardando…" : d ? "Guardar cambios" : "Agregar"}</button></div>
+      <div className="flex justify-end"><button className="boton primario" disabled={pendiente} aria-busy={pendiente}>{pendiente ? "Guardando…" : d ? "Guardar cambios" : "Agregar"}</button></div>
     </form>
   );
 }

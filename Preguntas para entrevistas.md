@@ -139,3 +139,11 @@ Dudas que surgen del análisis de los Excel y que hay que aclarar con quien cono
 - [ ] ¿Qué estados de móvil y qué motivos de fuera de servicio usan en la práctica?
 - [ ] ¿Cómo se cuenta la dotación de cada móvil?
 - [ ] ¿Hay móviles que no están en ninguna de las dos flotas?
+
+## Móviles que entran en la Agenda (15/11/2026)
+
+Se dejaron solo los móviles de calle de la Norte y la Sur (con sus departamentos y divisiones). Se dieron de baja, con el motivo «No corresponde a la Agenda» y se pueden reincorporar, los 4 de la Dirección Monitoreo y los 32 de Logística (División Personal y Logística y Departamento Logística).
+
+- [ ] ¿Los 16 móviles de la **División EPAT 360** (Ojos en Alerta, internos 301 a 400) salen a la calle y se agendan? ¿Para qué Dirección?
+- [ ] ¿Los 4 policiales cargados a la **Dirección General** sin división (internos 7501, 10556, 10628 y 10634) se agendan? ¿A qué unidad pertenecen en la práctica?
+

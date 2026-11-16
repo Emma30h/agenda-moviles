@@ -16,8 +16,26 @@ const Contexto = createContext<Confirmar>(async () => true);
 export function ConfirmarProvider({ children }: { children: ReactNode }) {
   const [pedido, setPedido] = useState<Pedido | null>(null);
   const resolver = useRef<((ok: boolean) => void) | null>(null);
-  const confirmar = useCallback<Confirmar>((p) => new Promise((ok) => { resolver.current = ok; setPedido(p); }), []);
-  const cerrar = useCallback((ok: boolean) => { resolver.current?.(ok); resolver.current = null; setPedido(null); }, []);
+  // Último botón que se tocó (el que pidió la confirmación)
+  const ultimoBoton = useRef<HTMLButtonElement | null>(null);
+  const origen = useRef<HTMLButtonElement | null>(null);
+  useEffect(() => {
+    const anotar = (e: MouseEvent) => {
+      const b = (e.target as Element | null)?.closest?.("button");
+      if (b && !b.closest("dialog.confirmar")) ultimoBoton.current = b as HTMLButtonElement;
+    };
+    document.addEventListener("click", anotar, true);
+    return () => document.removeEventListener("click", anotar, true);
+  }, []);
+  const confirmar = useCallback<Confirmar>((p) => new Promise((ok) => {
+    origen.current = ultimoBoton.current;
+    resolver.current = ok;
+    setPedido(p);
+  }), []);
+  const cerrar = useCallback((ok: boolean) => {
+    if (ok && origen.current) marcarOcupado(origen.current);
+    resolver.current?.(ok); resolver.current = null; origen.current = null; setPedido(null);
+  }, []);
   return (
     <Contexto.Provider value={confirmar}>
       {children}
@@ -27,6 +45,40 @@ export function ConfirmarProvider({ children }: { children: ReactNode }) {
 }
 
 export const useConfirmar = () => useContext(Contexto);
+
+/**
+ * El botón que se confirmó muestra el círculo girando hasta que la acción termina:
+ * cuando se vuelve a habilitar, cambia su texto (ej. «Ya reclamado») o desaparece
+ * (ej. el reclamo se cerró). Tope de 30 segundos por si algo falla.
+ */
+function marcarOcupado(b: HTMLButtonElement) {
+  b.setAttribute("aria-busy", "true");
+  // El ítem al que pertenece el botón (fila, reclamo, situación) se apaga enseguida: respuesta inmediata
+  const item = b.closest<HTMLElement>("[data-item], tr, li");
+  item?.setAttribute("data-procesando", "");
+  const texto = b.textContent;
+  let estuvoDeshabilitado = b.disabled;
+  let terminado = false;
+  const fin = () => {
+    if (terminado) return;
+    terminado = true;
+    b.removeAttribute("aria-busy");
+    item?.removeAttribute("data-procesando");
+    obs.disconnect();
+    clearInterval(vigilar);
+    clearTimeout(tope);
+    clearTimeout(rapido);
+  };
+  const obs = new MutationObserver(() => {
+    if (b.disabled) { estuvoDeshabilitado = true; return; }
+    if (estuvoDeshabilitado || b.textContent !== texto) fin();
+  });
+  obs.observe(b, { attributes: true, attributeFilter: ["disabled"], childList: true, characterData: true, subtree: true });
+  const vigilar = setInterval(() => { if (!b.isConnected) fin(); }, 300);
+  // Si en 1,5 segundos nunca se deshabilitó, la acción no la está esperando: se saca el indicador
+  const rapido = setTimeout(() => { if (!estuvoDeshabilitado && !b.disabled) fin(); }, 1500);
+  const tope = setTimeout(fin, 30_000);
+}
 
 function Tarjeta({ pedido, onRespuesta }: { pedido: Pedido; onRespuesta: (ok: boolean) => void }) {
   const ref = useRef<HTMLDialogElement>(null);

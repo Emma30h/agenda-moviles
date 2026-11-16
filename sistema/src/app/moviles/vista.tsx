@@ -1,5 +1,7 @@
 "use client";
 
+import { Procesando } from "@/components/cargando";
+
 import { useConfirmar } from "@/components/confirmar";
 
 import Image from "next/image";
@@ -131,6 +133,7 @@ function Ficha({ m, arbol, unidades, moviles, raizEdita, editable, enServicio, f
 
   return (
     <Dialogo titulo={textoMovil(m)} subtitulo={`${[m.tipo, m.marca, m.modelo].filter(Boolean).join(" · ")} · ${PROGRAMAS[m.programa]} · ${arbol.porId.get(m.unidad)?.nombre}`} onCerrar={onCerrar}>
+      <Procesando activo={pendiente} />
       <div className="mt-3 flex flex-wrap gap-2">
         {!m.activo ? <span className="etiqueta">Dado de baja</span> : enServicio ? <span className="etiqueta ok">En servicio · {enServicio}</span> : fuera ? <span className="etiqueta mal">Fuera de servicio</span> : <span className="etiqueta">Disponible</span>}
         {m.revisar && <span className="etiqueta atento">{m.revisar}</span>}
@@ -186,7 +189,7 @@ export function FormBaja({ motivos, aviso, onEnviar, onVolver, pendiente }: {
       </>}
       <div className="flex gap-2 justify-end">
         <button type="button" className="boton" onClick={onVolver}>Volver</button>
-        {motivos.length > 0 && <button type="submit" className="boton peligro" disabled={pendiente}>{pendiente ? "Guardando…" : "Confirmar baja"}</button>}
+        {motivos.length > 0 && <button type="submit" className="boton peligro" disabled={pendiente} aria-busy={pendiente}>{pendiente ? "Guardando…" : "Confirmar baja"}</button>}
       </div>
     </form>
   );
@@ -254,7 +257,7 @@ function FormMovil({ m, arbol, unidades, raizEdita, moviles, enServicio, onListo
       {error && <div className="aviso mal">{error}</div>}
       <div className="flex gap-2 justify-end">
         {onVolver && <button type="button" className="boton" onClick={onVolver}>Volver</button>}
-        <button type="submit" className="boton primario" disabled={pendiente || !!bloqueo}>{pendiente ? "Guardando…" : m ? "Guardar cambios" : "Dar de alta"}</button>
+        <button type="submit" className="boton primario" disabled={pendiente || !!bloqueo} aria-busy={pendiente}>{pendiente ? "Guardando…" : m ? "Guardar cambios" : "Dar de alta"}</button>
       </div>
     </form>
   );
@@ -280,7 +283,7 @@ function FormPrestar({ arbol, unidades, raiz, origen, enServicio, pendiente, onE
       <Campo texto="Observación (opcional)"><input className="entrada" value={obs} onChange={(e) => setObs(e.target.value)} maxLength={200} placeholder="Refuerzo por evento, falta de móviles…" /></Campo>
       <div className="flex gap-2 justify-end">
         <button type="button" className="boton" onClick={onVolver}>Volver</button>
-        <button type="submit" className="boton primario" disabled={pendiente || enServicio || !destino || destino === origen}>{pendiente ? "Guardando…" : "Prestar"}</button>
+        <button type="submit" className="boton primario" disabled={pendiente || enServicio || !destino || destino === origen} aria-busy={pendiente}>{pendiente ? "Guardando…" : "Prestar"}</button>
       </div>
     </form>
   );

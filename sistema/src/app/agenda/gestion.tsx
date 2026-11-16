@@ -1,5 +1,7 @@
 "use client";
 
+import { Procesando } from "@/components/cargando";
+
 import { useConfirmar } from "@/components/confirmar";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -57,6 +59,7 @@ export function Gestion(p: Props) {
 
   return (
     <dialog ref={dlg} className="dialogo" aria-labelledby="gestion-titulo">
+      <Procesando activo={pendiente} />
       <div className="flex justify-between items-start gap-3">
         <div>
           <h2 id="gestion-titulo" className="text-lg font-semibold">{textoMovil(m)}</h2>
@@ -209,7 +212,7 @@ function Botones({ pendiente, volver, texto }: { pendiente: boolean; volver: () 
   return (
     <div className="flex gap-2 justify-end">
       <button type="button" className="boton" onClick={volver}>Volver</button>
-      <button type="submit" className="boton primario" disabled={pendiente}>{pendiente ? "Guardando…" : texto}</button>
+      <button type="submit" className="boton primario" disabled={pendiente} aria-busy={pendiente}>{pendiente ? "Guardando…" : texto}</button>
     </div>
   );
 }

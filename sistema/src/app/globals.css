@@ -91,3 +91,69 @@ select.entrada { appearance: auto; }
 .confirmar-icono { flex: none; width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-weight: 700;
   background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
 .confirmar-icono.peligro { background: var(--bad-bg); color: var(--bad); }
+
+/* ---------- indicadores de carga ---------- */
+@keyframes girar { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; width: 14px; height: 14px; border-radius: 999px; border: 2px solid currentColor; border-right-color: transparent;
+  animation: girar .7s linear infinite; vertical-align: -2px; opacity: .9; flex: none; }
+.spinner.grande { width: 28px; height: 28px; border-width: 3px; }
+.pestana-spinner { position: absolute; left: 50%; top: 50%; margin: -7px 0 0 -7px; }
+/* Botón ocupado: el círculo aparece antes del texto */
+.boton[aria-busy="true"]::before { content: ""; width: 14px; height: 14px; border-radius: 999px; border: 2px solid currentColor;
+  border-right-color: transparent; animation: girar .7s linear infinite; flex: none; }
+.boton[aria-busy="true"] { cursor: progress; }
+.procesando { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 60; display: flex; gap: 8px; align-items: center;
+  background: var(--panel-2); color: var(--text); border: 1px solid var(--accent); border-radius: 999px; padding: 8px 16px; font-size: 14px;
+  box-shadow: 0 6px 24px rgb(0 0 0 / .35); }
+.cargando-pagina { display: grid; place-items: center; gap: 12px; padding: 64px 16px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .spinner, .boton[aria-busy="true"]::before { animation-duration: 2s; } }
+
+/* =====================================================================
+   Movimiento: todo usa las mismas duraciones y la misma curva, para que
+   los cambios se sientan continuos (la información del servidor tarda un
+   instante; la vista responde enseguida y el resultado llega con suavidad).
+   ===================================================================== */
+:root {
+  --mov-rapido: 140ms;
+  --mov: 220ms;
+  --mov-lento: 320ms;
+  --curva: cubic-bezier(.2, .7, .2, 1);   /* sale rápido y se asienta suave */
+}
+
+/* Cambios de estado: colores que pasan de uno a otro en vez de saltar */
+.etiqueta, .chip, .boton, .aviso, .entrada, .fila-movil > button, tbody tr {
+  transition: background-color var(--mov) var(--curva), color var(--mov) var(--curva),
+              border-color var(--mov) var(--curva), opacity var(--mov) var(--curva), filter var(--mov-rapido) var(--curva);
+}
+
+/* Llegadas: lo que aparece (avisos, filas, tarjetas, contenido de página) entra con un fundido y sube apenas */
+main > *, .tarjeta, .aviso, .paso, tbody tr, .fila-movil, .procesando {
+  /* «backwards»: al terminar, la animación suelta la opacidad (si no, pisaría los estados apagados) */
+  animation: llegar var(--mov) var(--curva) backwards;
+}
+@keyframes llegar { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+/* Las listas largas no se animan fila por fila al abrir la página: solo las que llegan después */
+main tbody tr, main .fila-movil { animation-duration: var(--mov-rapido); }
+
+/* Ventanas: se abren con un fundido y una leve escala; el fondo se oscurece de a poco */
+dialog[open] { animation: abrir var(--mov) var(--curva) both; }
+dialog[open]::backdrop { animation: oscurecer var(--mov) ease-out both; }
+@keyframes abrir { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes oscurecer { from { opacity: 0; } to { opacity: 1; } }
+
+/* Respuesta inmediata: el ítem que se está procesando se apaga hasta que llega el resultado */
+[data-procesando] { opacity: .45; filter: saturate(.6); pointer-events: none; transition: opacity var(--mov) var(--curva), filter var(--mov) var(--curva); }
+
+/* El aviso «Procesando…» y el círculo de los botones aparecen sin golpe */
+.boton[aria-busy="true"]::before { animation: girar .7s linear infinite, aparecer var(--mov-rapido) var(--curva) both; }
+@keyframes aparecer { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after, ::backdrop { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  .spinner, .boton[aria-busy="true"]::before { animation-duration: 1.6s !important; }
+}
+
+/* Navegación: mientras se abre otra pestaña, la página actual se apaga un poco (y la nueva entra con su fundido) */
+main :is(section, article, .aviso) { transition: opacity var(--mov-lento) var(--curva), filter var(--mov-lento) var(--curva); }
+body:has(header .pestana-spinner) main :is(section, article, .aviso),
+body:has(main [data-navegando]) main :is(section, article, .aviso) { opacity: .55; filter: saturate(.7); pointer-events: none; }

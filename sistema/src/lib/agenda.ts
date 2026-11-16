@@ -135,7 +135,7 @@ export function casiIgual(a: string, b: string): boolean {
 }
 export const compacto = (s: string) => plano(s).replace(/ /g, "");
 
-export const MOTIVOS_BAJA_MOVIL = ["Cargado por error", "Desafectado", "Siniestro total", "Transferido a otra dependencia", "Devuelto", "Otro"];
+export const MOTIVOS_BAJA_MOVIL = ["Cargado por error", "No corresponde a la Agenda", "Desafectado", "Siniestro total", "Transferido a otra dependencia", "Devuelto", "Otro"];
 export const MOTIVOS_BAJA_PERSONA = ["Cargado por error", "Pase a otra dependencia", "Exoneración", "Cesantía", "Retiro", "Renuncia", "Fallecimiento", "Otro"];
 export const TIPOS_SITUACION = ["TNO", "Licencia médica", "Licencia anual", "Licencia especial", "Suspensión preventiva", "Otra"];
 export const VEHICULOS = ["Sedan", "Pick Up", "Camioneta", "Utilitario", "Moto"];

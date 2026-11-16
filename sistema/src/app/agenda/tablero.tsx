@@ -1,5 +1,7 @@
 "use client";
 
+import { Procesando } from "@/components/cargando";
+
 import { useConfirmar } from "@/components/confirmar";
 
 import Image from "next/image";
@@ -39,6 +41,7 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador, reclama = fal
   const [aviso, setAviso] = useState<string | null>(null);
   const enVivo = useEnVivo(["servicio", "dotacion", "fuera_servicio", "reserva", "reclamo", "prestamo", "prestamo_personal", "reporte_frecuencia"], "agenda");
   const [resolviendo, iniciar] = useTransition();
+  const [navegando, navegar] = useTransition();
   const reportesAbiertos = datos.reportes.filter((r) => !r.resuelto_en && r.direccion && (raiz === "G" || r.direccion === raiz || arbol.dentro(r.direccion, raiz) || arbol.dentro(raiz, r.direccion)));
   const reclamosAbiertos = datos.reclamos.filter((r) => !r.resuelto_en && (raiz === "G" || r.direccion === raiz || arbol.dentro(r.direccion, raiz) || arbol.dentro(raiz, r.direccion)));
 
@@ -93,7 +96,8 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador, reclama = fal
   const turnoActual = turnos.get(guardia.turno);
 
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-4" data-navegando={navegando ? "" : undefined}>
+      <Procesando activo={resolviendo || navegando} />
       {/* Guardia */}
       <section className="tarjeta p-4 flex flex-wrap items-end gap-3 justify-between">
         <div>
@@ -105,15 +109,15 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador, reclama = fal
             </span>
           </p>
         </div>
-        <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); router.push(`/agenda?fecha=${f.get("fecha")}&turno=${f.get("turno")}`); }}>
+        <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); const f = new FormData(e.currentTarget); navegar(() => router.push(`/agenda?fecha=${f.get("fecha")}&turno=${f.get("turno")}`)); }}>
           <label className="campo"><span>Fecha</span><input className="entrada" type="date" name="fecha" defaultValue={guardia.fecha} key={guardia.fecha} /></label>
           <label className="campo"><span>Turno</span>
             <select className="entrada" name="turno" defaultValue={guardia.turno} key={guardia.turno}>
               {datos.turnos.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
             </select>
           </label>
-          <button className="boton" type="submit">Ver guardia</button>
-          <button className="boton" type="button" onClick={() => router.push("/agenda")}>Guardia actual</button>
+          <button className="boton" type="submit" disabled={navegando} aria-busy={navegando}>Ver guardia</button>
+          <button className="boton" type="button" disabled={navegando} onClick={() => navegar(() => router.push("/agenda"))}>Guardia actual</button>
         </form>
       </section>
 
@@ -123,9 +127,9 @@ export function Tablero({ datos, guardia, raiz, edita, esCargador, reclama = fal
         <div className="aviso atento grid gap-2">
           <b>{esCargador ? "Reclamos del General" : "Reclamos abiertos"} ({reclamosAbiertos.length})</b>
           {reclamosAbiertos.map((r) => (
-            <div key={r.id} className="flex flex-wrap gap-2 items-center justify-between text-sm">
+            <div key={r.id} data-item className="flex flex-wrap gap-2 items-center justify-between text-sm">
               <span>{NOMBRE_DIRECCION[r.direccion] ?? r.direccion} · {r.texto} · hace {hace(r.creado_en, ahora)}</span>
-              {edita && <button className="boton" disabled={resolviendo} onClick={async () => { if (await confirmar({ titulo: "¿Marcar el reclamo como resuelto?", mensaje: `${r.texto}. Deja de figurar como pendiente y queda en el registro.`, boton: "Marcar resuelto" })) iniciar(async () => { const x = await resolverReclamo(r.id); setAviso(x.error ?? x.ok ?? null); }); }}>Marcar resuelto</button>} {reclama && <button className="boton peligro" disabled={resolviendo} onClick={async () => { if (await confirmar({ titulo: "¿Anular el reclamo?", mensaje: `${r.texto}. Usalo si fue un error: se le saca al cargador y queda registrado como anulado, aparte de los resueltos.`, boton: "Anular", peligro: true })) iniciar(async () => { const x = await anularReclamo(r.id); setAviso(x.error ?? x.ok ?? null); }); }}>Anular (fue un error)</button>}
+              <span className="flex flex-wrap gap-2">{edita && <button className="boton" disabled={resolviendo} onClick={async () => { if (await confirmar({ titulo: "¿Marcar el reclamo como resuelto?", mensaje: `${r.texto}. Deja de figurar como pendiente y queda en el registro.`, boton: "Marcar resuelto" })) iniciar(async () => { const x = await resolverReclamo(r.id); setAviso(x.error ?? x.ok ?? null); }); }}>Marcar resuelto</button>} {reclama && <button className="boton peligro" disabled={resolviendo} onClick={async () => { if (await confirmar({ titulo: "¿Anular el reclamo?", mensaje: `${r.texto}. Usalo si fue un error: se le saca al cargador y queda registrado como anulado, aparte de los resueltos.`, boton: "Anular", peligro: true })) iniciar(async () => { const x = await anularReclamo(r.id); setAviso(x.error ?? x.ok ?? null); }); }}>Anular (fue un error)</button>}</span>
             </div>
           ))}
           <span className="text-[12.5px]">Se cierran solos cuando se agenda o reserva lo pedido.</span>
